@@ -743,6 +743,39 @@ body {
         </button>
       </div>
     </div>
+    <div class="field" style="margin-top:14px">
+      <div class="field-label">소화기 상태</div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+
+        <div>
+          <div class="field-label" style="margin-bottom:7px">명치</div>
+          <div class="btn-group" style="--opt-color:var(--health)">
+            <button class="btn-opt" onclick="setSingle('digestion_chest','괜찮음',this)">😀 괜찮음</button>
+            <button class="btn-opt" onclick="setSingle('digestion_chest','불편함',this)">😐 불편함</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label" style="margin-bottom:7px">식도</div>
+          <div class="btn-group" style="--opt-color:var(--health)">
+            <button class="btn-opt" onclick="setSingle('digestion_esophagus','괜찮음',this)">😀 괜찮음</button>
+            <button class="btn-opt" onclick="setSingle('digestion_esophagus','긁힘/역류',this)">😐 긁힘/역류</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label" style="margin-bottom:7px">전날</div>
+          <div class="btn-group" style="--opt-color:var(--stress)">
+            <button class="btn-opt" onclick="toggleMulti('digestion_yesterday','커피',this)">☕ 커피</button>
+            <button class="btn-opt" onclick="toggleMulti('digestion_yesterday','늦은식사',this)">🌙 늦은식사</button>
+            <button class="btn-opt" onclick="toggleMulti('digestion_yesterday','과식',this)">🍟 과식</button>
+            <button class="btn-opt" onclick="toggleMulti('digestion_yesterday','괜찮았음',this)">👍 괜찮았음</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
 </div>
@@ -1035,6 +1068,10 @@ const state = {
   recovery_spacing: false, recovery_reading: false,
   digital_stimulation: 3, overthinking: 3,
   mental_browsing: false, tension: 3,
+  digestion: 3,
+  digestion_chest: null,
+  digestion_esophagus: null,
+  digestion_yesterday: [],
 };
 
 let imageBase64 = null;
@@ -1071,7 +1108,8 @@ function updateSlider(id, valId) {
 }
 function setSingle(key, val, btn) {
   state[key] = val;
-  btn.closest('.btn-group').querySelectorAll('.btn-opt').forEach(b => b.classList.remove('selected'));
+  const grp = btn.closest('.btn-group') || btn.parentElement;
+  grp.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
 function setYN(key, val, btn) {
@@ -1262,6 +1300,7 @@ async function saveAll() {
   const payload = { ...state, date: getToday() };
   // 배열 처리
   if (!payload.stress_source || payload.stress_source.length === 0) payload.stress_source = null;
+  if (!payload.digestion_yesterday || payload.digestion_yesterday.length === 0) payload.digestion_yesterday = null;
 
   try {
     const today = getToday();
