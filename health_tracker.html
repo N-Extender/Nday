@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Daily Log</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #0a0a0c;
+  --surface: #131317;
+  --surface2: #1a1a20;
+  --border: #252530;
+  --border2: #2e2e3a;
+  --text: #e2ddd6;
+  --muted: #6a6a7a;
+  --faint: #3a3a4a;
+
+  /* 상징색 */
+  --career:  #4a90d9;
+  --money:   #d4a843;
+  --plan:    #888780;
+  --relation:#e06090;
+  --health:  #5db870;
+  --growth:  #e07840;
+  --charm:   #d060a0;
+  --mind:    #9070c8;
+  --joy:     #4ec9b0;
+
+  --morning: #c8a96e;
+  --day:     #7b9e87;
+  --stress:  #8f7abf;
+  --night:   #607090;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Noto Serif KR', serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
+.header-left h1 {
+  font-size: 1.1rem;
+  font-weight: 300;
+  letter-spacing: .15em;
+  color: var(--text);
+}
+.header-left .date {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: .08em;
+}
+.save-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  padding: 7px 16px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: .06em;
+  font-weight: 500;
+  transition: opacity .2s;
+}
+.save-btn:hover { opacity: .8; }
+.save-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 65px;
+  z-index: 99;
+}
+.tab {
+  flex: 1;
+  padding: 11px 4px;
+  text-align: center;
+  font-size: .7rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+  letter-spacing: .04em;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'Noto Serif KR', serif;
+}
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+/* ── PANEL ── */
+.panel { display: none; padding: 20px 16px; }
+.panel.active { display: block; }
+
+/* ── SECTION ── */
+.section { margin-bottom: 28px; }
+.section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  color: var(--muted);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--section-color, var(--muted));
+  flex-shrink: 0;
+}
+
+/* ── FIELD ── */
+.field { margin-bottom: 14px; }
+.field-label {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: .06em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.field-label .badge {
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: .06em;
+}
+.badge-auto { background: rgba(93,184,112,.15); color: var(--health); border: 1px solid rgba(93,184,112,.25); }
+.badge-manual { background: rgba(136,135,128,.12); color: var(--plan); border: 1px solid rgba(136,135,128,.2); }
+
+/* NUMBER INPUT */
+.num-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.num-input input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: .9rem;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color .2s;
+  text-align: center;
+}
+.num-input input:focus { border-color: var(--text); }
+.num-input input::placeholder { color: var(--faint); font-size: .8rem; }
+.num-unit {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* TIME INPUT */
+.time-input input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: .9rem;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color .2s;
+  width: 100%;
+  -webkit-appearance: none;
+}
+.time-input input:focus { border-color: var(--text); }
+
+/* SLIDER */
+.slider-wrap { padding: 4px 0; }
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.slider-row input[type=range] {
+  flex: 1;
+  height: 3px;
+  -webkit-appearance: none;
+  background: var(--border2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.slider-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--slider-color, var(--text));
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--slider-color, var(--text));
+}
+.slider-val {
+  font-family: 'DM Mono', monospace;
+  font-size: .85rem;
+  color: var(--slider-color, var(--text));
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.slider-marks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+.slider-marks span {
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  color: var(--faint);
+}
+
+/* BUTTONS */
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.btn-opt {
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  color: var(--muted);
+  font-family: 'Noto Serif KR', serif;
+  font-size: .72rem;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn-opt.selected {
+  background: var(--opt-color, var(--text));
+  border-color: var(--opt-color, var(--text));
+  color: var(--bg);
+}
+.btn-opt:hover:not(.selected) { border-color: var(--muted); color: var(--text); }
+
+/* YN BUTTONS */
+.yn-group { display: flex; gap: 6px; }
+.yn-btn {
+  flex: 1;
+  padding: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.yn-btn.y-selected { background: rgba(93,184,112,.15); border-color: var(--health); color: var(--health); }
+.yn-btn.n-selected { background: rgba(192,96,96,.1); border-color: #c06060; color: #c06060; }
+
+/* MULTI SELECT */
+.multi-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.multi-btn {
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'Noto Serif KR', serif;
+  font-size: .7rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.multi-btn.selected {
+  background: rgba(143,122,191,.15);
+  border-color: var(--stress);
+  color: var(--stress);
+}
+
+/* IMAGE UPLOAD */
+.upload-zone {
+  border: 1px dashed var(--border2);
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--surface);
+  position: relative;
+}
+.upload-zone:hover { border-color: var(--muted); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .upload-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.upload-zone .upload-text { font-size: .72rem; color: var(--muted); }
+.upload-zone .upload-hint { font-family: 'DM Mono', monospace; font-size: .6rem; color: var(--faint); margin-top: 4px; }
+.preview-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
+
+/* ANALYZING */
+.analyze-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .06em;
+  display: none;
+}
+.analyze-btn:hover { border-color: var(--health); color: var(--health); }
+.analyze-status {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  text-align: center;
+  margin-top: 8px;
+  min-height: 18px;
+  color: var(--muted);
+}
+.analyze-status.ok { color: var(--health); }
+.analyze-status.err { color: #c06060; }
+
+/* EXTRACTED VALUES */
+.extracted-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+.extracted-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.extracted-item .ex-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.extracted-item .ex-val {
+  font-family: 'DM Mono', monospace;
+  font-size: .85rem;
+  color: var(--health);
+}
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* SAVE MSG */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  color: var(--health);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity .3s;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ── REVIEW TAB ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--card-color, var(--muted));
+  border-radius: 4px;
+  padding: 12px 12px;
+}
+.stat-card .s-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: .08em;
+}
+.stat-card .s-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.2rem;
+  color: var(--card-color, var(--text));
+  font-weight: 500;
+}
+.stat-card .s-unit {
+  font-size: .6rem;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.hm-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  cursor: default;
+  transition: opacity .2s;
+}
+.hm-cell.has-data { background: var(--text); }
+.hm-cell.has-data.low { opacity: .2; }
+.hm-cell.has-data.mid { opacity: .5; }
+.hm-cell.has-data.high { opacity: .85; }
+.hm-cell.today { border-color: var(--joy); box-shadow: 0 0 5px var(--joy); }
+
+.hm-legend {
+  display: flex; gap: 8px; align-items: center; margin-bottom: 16px;
+}
+.hm-legend span {
+  font-family: 'DM Mono', monospace; font-size: .6rem; color: var(--muted);
+}
+.ld { width: 10px; height: 10px; border-radius: 2px; }
+
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bar-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.bar-lbl { font-size: .68rem; color: var(--muted); width: 70px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 5px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
+.bar-val { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--text); width: 28px; flex-shrink: 0; text-align: right; }
+
+/* EXPORT */
+.export-btn {
+  width: 100%;
+  padding: 11px;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+.export-btn:hover { border-color: var(--text); color: var(--text); }
+
+.review-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  color: var(--muted);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.empty-msg {
+  font-size: .75rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 28px 0;
+  line-height: 1.8;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+.nav-btn {
+  flex: 1;
+  padding: 12px 4px 16px;
+  text-align: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: 'Noto Serif KR', serif;
+  font-size: .62rem;
+  color: var(--muted);
+  transition: color .2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.nav-btn.active { color: var(--text); }
+.nav-icon { font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Daily Log</h1>
+    <div class="date" id="dateLabel">—</div>
+  </div>
+  <button class="save-btn" onclick="saveAll()" id="saveBtn">저장</button>
+</div>
+
+<!-- 탭 네비게이션은 하단 고정 -->
+
+<!-- ===== PANEL: MORNING ===== -->
+<div class="panel active" id="panel-morning">
+
+  <!-- 가민 캡처 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--health)">
+      <div class="dot"></div>가민 캡처 자동 분석
+    </div>
+
+    <div class="field">
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" accept="image/*" onchange="onImageSelect(event)" id="imgInput">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">가민 수면 화면 캡처 업로드</div>
+        <div class="upload-hint">탭하여 갤러리에서 선택</div>
+        <img class="preview-img" id="previewImg">
+      </div>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">자동 분석하기</button>
+      <div class="analyze-status" id="analyzeStatus"></div>
+      <div class="extracted-grid" id="extractedGrid" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- 📡 자동 추출된 값 수동 확인 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--health)">
+      <div class="dot"></div>📡 기기 수집 데이터
+    </div>
+
+    <div class="field">
+      <div class="field-label"><span class="badge badge-auto">AUTO</span> 수면 점수</div>
+      <div class="num-input">
+        <input type="number" id="sleep_score" placeholder="0~100" min="0" max="100">
+        <span class="num-unit">점</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label"><span class="badge badge-auto">AUTO</span> 총 수면</div>
+      <div class="num-input">
+        <input type="number" id="sleep_total_min" placeholder="분">
+        <span class="num-unit">분</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> 깊은 수면</div>
+        <div class="num-input"><input type="number" id="sleep_deep_min" placeholder="분"><span class="num-unit">분</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> REM</div>
+        <div class="num-input"><input type="number" id="sleep_rem_min" placeholder="분"><span class="num-unit">분</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> 알음 수면</div>
+        <div class="num-input"><input type="number" id="sleep_light_min" placeholder="분"><span class="num-unit">분</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> 각성</div>
+        <div class="num-input"><input type="number" id="sleep_awake_min" placeholder="분"><span class="num-unit">분</span></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> HRV</div>
+        <div class="num-input"><input type="number" id="hrv_night_avg" placeholder="ms"><span class="num-unit">ms</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> 안정시 심박</div>
+        <div class="num-input"><input type="number" id="hr_resting" placeholder="bpm"><span class="num-unit">bpm</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> 밤사이 심박</div>
+        <div class="num-input"><input type="number" id="hr_night_avg" placeholder="bpm"><span class="num-unit">bpm</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-auto">AUTO</span> 바디배터리 충전</div>
+        <div class="num-input"><input type="number" id="body_battery_charged" placeholder="+"><span class="num-unit"></span></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label"><span class="badge badge-auto">AUTO</span> 바디배터리 아침</div>
+      <div class="num-input"><input type="number" id="body_battery_morning" placeholder="0~100"><span class="num-unit"></span></div>
+    </div>
+  </div>
+
+  <!-- ✏️ 수면 질 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--morning)">
+      <div class="dot"></div>✏️ 수면 질
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field">
+        <div class="field-label">취침 시간</div>
+        <div class="time-input"><input type="time" id="bedtime"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">기상 시간</div>
+        <div class="time-input"><input type="time" id="wake_time"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">기상 체감</div>
+      <div class="slider-wrap">
+        <div class="slider-row" style="--slider-color:var(--morning)">
+          <input type="range" min="1" max="5" value="3" id="wake_feeling" oninput="updateSlider('wake_feeling','wfv')">
+          <span class="slider-val" id="wfv">3</span>
+        </div>
+        <div class="slider-marks"><span>😴 1</span><span>3</span><span>5 😊</span></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">중간 각성 횟수</div>
+      <div class="num-input">
+        <input type="number" id="night_wakeup_count" placeholder="0" min="0" max="20">
+        <span class="num-unit">회</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">새벽 각성</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('early_wakeup','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('early_wakeup','N',this)">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">다시 잠들기 어려움</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('hard_to_sleep_again','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('hard_to_sleep_again','N',this)">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">꿈 많음</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('many_dreams','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('many_dreams','N',this)">N</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ 아침 컨디션 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--morning)">
+      <div class="dot"></div>✏️ 아침 컨디션
+    </div>
+
+    <div class="field">
+      <div class="field-label">컨디션 점수</div>
+      <div class="slider-wrap">
+        <div class="slider-row" style="--slider-color:var(--morning)">
+          <input type="range" min="1" max="10" value="5" id="condition_score" oninput="updateSlider('condition_score','csv')">
+          <span class="slider-val" id="csv">5</span>
+        </div>
+        <div class="slider-marks"><span>1</span><span>5</span><span>10</span></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">에너지 느낌</div>
+      <div class="btn-group" style="--opt-color:var(--morning)">
+        <button class="btn-opt" onclick="setSingle('energy_feeling','가벼움',this)">가벼움</button>
+        <button class="btn-opt selected" onclick="setSingle('energy_feeling','보통',this)">보통</button>
+        <button class="btn-opt" onclick="setSingle('energy_feeling','무거움',this)">무거움</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">집중 상태</div>
+      <div class="btn-group" style="--opt-color:var(--morning)">
+        <button class="btn-opt" onclick="setSingle('focus_state','또렷함',this)">또렷함</button>
+        <button class="btn-opt selected" onclick="setSingle('focus_state','보통',this)">보통</button>
+        <button class="btn-opt" onclick="setSingle('focus_state','흐림',this)">흐림</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">감정 상태</div>
+      <div class="btn-group" style="--opt-color:var(--morning)">
+        <button class="btn-opt" onclick="setSingle('mood','안정',this)">안정</button>
+        <button class="btn-opt selected" onclick="setSingle('mood','보통',this)">보통</button>
+        <button class="btn-opt" onclick="setSingle('mood','불안',this)">불안</button>
+        <button class="btn-opt" onclick="setSingle('mood','예민',this)">예민</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">생리주기 단계</div>
+      <div class="btn-group">
+        <button class="btn-opt" style="--opt-color:#e06060" onclick="setSingle('cycle_phase','생리기',this)">🔴 생리기</button>
+        <button class="btn-opt" style="--opt-color:var(--money)" onclick="setSingle('cycle_phase','난포기',this)">🟡 난포기</button>
+        <button class="btn-opt" style="--opt-color:var(--health)" onclick="setSingle('cycle_phase','배란기',this)">🟢 배란기</button>
+        <button class="btn-opt" style="--opt-color:var(--growth)" onclick="setSingle('cycle_phase','황체기',this)">🟠 황체기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ 신체 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--health)">
+      <div class="dot"></div>✏️ 신체 지표
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field">
+        <div class="field-label"><span class="badge badge-manual">수동</span> 몸무게</div>
+        <div class="num-input"><input type="number" id="weight_kg" placeholder="56.8" step="0.1"><span class="num-unit">kg</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span class="badge badge-manual">수동</span> 허리둘레</div>
+        <div class="num-input"><input type="number" id="waist_cm" placeholder="67.0" step="0.1"><span class="num-unit">cm</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PANEL: DAY ===== -->
+<div class="panel" id="panel-day">
+
+  <!-- 카페인 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--day)">
+      <div class="dot"></div>☕ 카페인
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field">
+        <div class="field-label">마지막 시간</div>
+        <div class="time-input"><input type="time" id="caffeine_time"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">잔 수</div>
+        <div class="num-input"><input type="number" id="caffeine_cups" placeholder="1" step="0.5" min="0"><span class="num-unit">잔</span></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">종류</div>
+      <div class="btn-group" style="--opt-color:var(--day)">
+        <button class="btn-opt" onclick="setSingle('caffeine_type','아메리카노',this)">아메리카노</button>
+        <button class="btn-opt" onclick="setSingle('caffeine_type','라떼',this)">라떼</button>
+        <button class="btn-opt" onclick="setSingle('caffeine_type','기타',this)">기타</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 식사 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--day)">
+      <div class="dot"></div>🍽 식사
+    </div>
+    <div class="field">
+      <div class="field-label">저녁 식사 시간</div>
+      <div class="time-input"><input type="time" id="dinner_time"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">취침 전 공복감</div>
+      <div class="btn-group" style="--opt-color:var(--day)">
+        <button class="btn-opt" onclick="setSingle('hunger_before_bed','낮음',this)">낮음</button>
+        <button class="btn-opt selected" onclick="setSingle('hunger_before_bed','보통',this)">보통</button>
+        <button class="btn-opt" onclick="setSingle('hunger_before_bed','높음',this)">높음</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">야식</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('late_night_snack','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('late_night_snack','N',this)">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">수분 과다</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('excess_water','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('excess_water','N',this)">N</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 운동 -->
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--day)">
+      <div class="dot"></div>🏃 운동 / 활동
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field">
+        <div class="field-label">운동 시간</div>
+        <div class="num-input"><input type="number" id="exercise_min" placeholder="0" min="0"><span class="num-unit">분</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label">햇빛 노출</div>
+        <div class="num-input"><input type="number" id="sunlight_min" placeholder="0" min="0"><span class="num-unit">분</span></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">운동 종류</div>
+      <div class="btn-group" style="--opt-color:var(--day)">
+        <button class="btn-opt" onclick="setSingle('exercise_type','필라테스',this)">필라테스</button>
+        <button class="btn-opt" onclick="setSingle('exercise_type','러닝',this)">러닝</button>
+        <button class="btn-opt" onclick="setSingle('exercise_type','걷기',this)">걷기</button>
+        <button class="btn-opt" onclick="setSingle('exercise_type','수영',this)">수영</button>
+        <button class="btn-opt" onclick="setSingle('exercise_type','요가',this)">요가</button>
+        <button class="btn-opt" onclick="setSingle('exercise_type','기타',this)">기타</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">운동 강도</div>
+      <div class="btn-group" style="--opt-color:var(--day)">
+        <button class="btn-opt" onclick="setSingle('exercise_intensity','가벼움',this)">가벼움</button>
+        <button class="btn-opt selected" onclick="setSingle('exercise_intensity','보통',this)">보통</button>
+        <button class="btn-opt" onclick="setSingle('exercise_intensity','강함',this)">강함</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label"><span class="badge badge-manual">수동</span> 걸음 수</div>
+      <div class="num-input"><input type="number" id="steps" placeholder="0" min="0"><span class="num-unit">보</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PANEL: STRESS ===== -->
+<div class="panel" id="panel-stress">
+
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--stress)">
+      <div class="dot"></div>🧠 스트레스 요인
+    </div>
+    <div class="field">
+      <div class="field-label">해당 항목 모두 선택</div>
+      <div class="multi-group" id="stressSource">
+        <button class="multi-btn" onclick="toggleMulti('stress_source','업무',this)">업무</button>
+        <button class="multi-btn" onclick="toggleMulti('stress_source','인간관계',this)">인간관계</button>
+        <button class="multi-btn" onclick="toggleMulti('stress_source','미래 고민',this)">미래 고민</button>
+        <button class="multi-btn" onclick="toggleMulti('stress_source','재정',this)">재정</button>
+        <button class="multi-btn" onclick="toggleMulti('stress_source','건강',this)">건강</button>
+        <button class="multi-btn" onclick="toggleMulti('stress_source','기타',this)">기타</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--stress)">
+      <div class="dot"></div>🌿 회복 활동
+    </div>
+    <div class="field">
+      <div class="field-label">산책</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('recovery_walk','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('recovery_walk','N',this)">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">스트레칭</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('recovery_stretch','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('recovery_stretch','N',this)">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">멍때리기</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('recovery_spacing','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('recovery_spacing','N',this)">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">독서</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('recovery_reading','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('recovery_reading','N',this)">N</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PANEL: NIGHT ===== -->
+<div class="panel" id="panel-night">
+
+  <div class="section">
+    <div class="section-title" style="--section-color:var(--night)">
+      <div class="dot"></div>🌙 야간 자극 상태
+    </div>
+
+    <div class="field">
+      <div class="field-label">디지털 자극 수준</div>
+      <div class="slider-wrap">
+        <div class="slider-row" style="--slider-color:var(--night)">
+          <input type="range" min="1" max="5" value="3" id="digital_stimulation" oninput="updateSlider('digital_stimulation','dsv')">
+          <span class="slider-val" id="dsv">3</span>
+        </div>
+        <div class="slider-marks"><span>낮음 1</span><span>3</span><span>5 높음</span></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">생각 많음</div>
+      <div class="slider-wrap">
+        <div class="slider-row" style="--slider-color:var(--night)">
+          <input type="range" min="1" max="5" value="3" id="overthinking" oninput="updateSlider('overthinking','otv')">
+          <span class="slider-val" id="otv">3</span>
+        </div>
+        <div class="slider-marks"><span>적음 1</span><span>3</span><span>5 많음</span></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">긴장감</div>
+      <div class="slider-wrap">
+        <div class="slider-row" style="--slider-color:var(--night)">
+          <input type="range" min="1" max="5" value="3" id="tension" oninput="updateSlider('tension','tnv')">
+          <span class="slider-val" id="tnv">3</span>
+        </div>
+        <div class="slider-marks"><span>없음 1</span><span>3</span><span>5 높음</span></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">머리 쓰는 검색</div>
+      <div class="yn-group">
+        <button class="yn-btn" onclick="setYN('mental_browsing','Y',this)">Y</button>
+        <button class="yn-btn n-selected" onclick="setYN('mental_browsing','N',this)">N</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PANEL: REVIEW ===== -->
+<div class="panel" id="panel-review">
+
+  <div class="review-title">최근 28일</div>
+  <div class="heatmap" id="heatmap"></div>
+  <div class="hm-legend">
+    <div class="ld" style="background:var(--surface2);border:1px solid var(--border)"></div><span>미기록</span>
+    <div class="ld" style="background:var(--text);opacity:.2"></div><span>낮음</span>
+    <div class="ld" style="background:var(--text);opacity:.55"></div><span>보통</span>
+    <div class="ld" style="background:var(--text);opacity:.85"></div><span>높음</span>
+  </div>
+
+  <div class="review-title">7일 평균</div>
+  <div class="stat-grid" id="statGrid"></div>
+
+  <div class="review-title">생리주기별 컨디션</div>
+  <div id="cycleChart"></div>
+
+  <div class="divider"></div>
+  <div class="review-title">내보내기</div>
+  <button class="export-btn" onclick="exportMD()">📄 옵시디언 .md 내보내기</button>
+  <button class="export-btn" onclick="exportCSV()">📊 CSV 내보내기</button>
+
+</div>
+
+<!-- 하단 네비게이션 -->
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="switchTab('morning')" id="nav-morning">
+    <span class="nav-icon">🌅</span>Morning
+  </button>
+  <button class="nav-btn" onclick="switchTab('day')" id="nav-day">
+    <span class="nav-icon">☀️</span>Day
+  </button>
+  <button class="nav-btn" onclick="switchTab('stress')" id="nav-stress">
+    <span class="nav-icon">🧠</span>Stress
+  </button>
+  <button class="nav-btn" onclick="switchTab('night')" id="nav-night">
+    <span class="nav-icon">🌙</span>Night
+  </button>
+  <button class="nav-btn" onclick="switchTab('review')" id="nav-review">
+    <span class="nav-icon">📊</span>Review
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const SUPABASE_URL = 'https://ktzexhlgreppeporcdwb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_EqbNC8netAXOt62V56O-tQ_XpCi4sHq';
+const CLAUDE_API   = 'https://api.anthropic.com/v1/messages';
+
+// ── STATE ──
+const state = {
+  // 기기
+  sleep_score: null, sleep_total_min: null, sleep_deep_min: null,
+  sleep_light_min: null, sleep_rem_min: null, sleep_awake_min: null,
+  hr_night_avg: null, hr_resting: null, hrv_night_avg: null,
+  body_battery_charged: null, body_battery_morning: null,
+  // 수동
+  weight_kg: null, waist_cm: null, steps: null,
+  bedtime: null, wake_time: null,
+  wake_feeling: 3, night_wakeup_count: null,
+  early_wakeup: false, hard_to_sleep_again: false, many_dreams: false,
+  condition_score: 5,
+  energy_feeling: '보통', focus_state: '보통', mood: '보통',
+  cycle_phase: null,
+  caffeine_time: null, caffeine_type: null, caffeine_cups: null,
+  dinner_time: null, hunger_before_bed: '보통',
+  late_night_snack: false, excess_water: false,
+  exercise_min: null, exercise_type: null, exercise_intensity: '보통',
+  sunlight_min: null,
+  stress_source: [],
+  recovery_walk: false, recovery_stretch: false,
+  recovery_spacing: false, recovery_reading: false,
+  digital_stimulation: 3, overthinking: 3,
+  mental_browsing: false, tension: 3,
+};
+
+let imageBase64 = null;
+let currentTab = 'morning';
+
+// ── INIT ──
+function getToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDateKR(s) {
+  const [y,m,d] = s.split('-');
+  const days = ['일','월','화','수','목','금','토'];
+  return `${y}년 ${m}월 ${d}일 (${days[new Date(y,m-1,d).getDay()]})`;
+}
+
+document.getElementById('dateLabel').textContent = formatDateKR(getToday());
+loadToday();
+
+// ── TAB ──
+function switchTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  currentTab = id;
+  if (id === 'review') renderReview();
+}
+
+// ── HELPERS ──
+function updateSlider(id, valId) {
+  state[id] = parseInt(document.getElementById(id).value);
+  document.getElementById(valId).textContent = state[id];
+}
+function setSingle(key, val, btn) {
+  state[key] = val;
+  btn.closest('.btn-group').querySelectorAll('.btn-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function setYN(key, val, btn) {
+  state[key] = val === 'Y';
+  const grp = btn.closest('.yn-group');
+  grp.querySelectorAll('.yn-btn').forEach(b => { b.classList.remove('y-selected','n-selected'); });
+  btn.classList.add(val === 'Y' ? 'y-selected' : 'n-selected');
+}
+function toggleMulti(key, val, btn) {
+  btn.classList.toggle('selected');
+  if (!state[key]) state[key] = [];
+  if (btn.classList.contains('selected')) {
+    if (!state[key].includes(val)) state[key].push(val);
+  } else {
+    state[key] = state[key].filter(v => v !== val);
+  }
+}
+
+// ── NUMBER INPUTS ──
+document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
+  inp.addEventListener('input', () => {
+    const key = inp.id;
+    if (key in state) {
+      if (inp.type === 'number') {
+        state[key] = inp.value ? parseFloat(inp.value) : null;
+      } else {
+        state[key] = inp.value || null;
+      }
+    }
+  });
+});
+
+// ── IMAGE ──
+function onImageSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    imageBase64 = ev.target.result.split(',')[1];
+    const img = document.getElementById('previewImg');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('analyzeBtn').style.display = 'block';
+    document.getElementById('analyzeStatus').textContent = '이미지 준비 완료';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeImage() {
+  if (!imageBase64) return;
+  const btn = document.getElementById('analyzeBtn');
+  const status = document.getElementById('analyzeStatus');
+  btn.disabled = true;
+  status.className = 'analyze-status';
+  status.textContent = '분석 중...';
+
+  try {
+    const res = await fetch(CLAUDE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 }
+            },
+            {
+              type: 'text',
+              text: `이 가민(Garmin) 또는 삼성 헬스 앱 화면에서 수치를 추출해주세요.
+JSON 형식으로만 응답하세요. 없는 값은 null로:
+{
+  "sleep_score": 숫자,
+  "sleep_total_min": 숫자(분),
+  "sleep_deep_min": 숫자(분),
+  "sleep_light_min": 숫자(분),
+  "sleep_rem_min": 숫자(분),
+  "sleep_awake_min": 숫자(분),
+  "hr_night_avg": 숫자,
+  "hr_resting": 숫자,
+  "hrv_night_avg": 숫자,
+  "body_battery_charged": 숫자,
+  "body_battery_morning": 숫자
+}
+시간 표기(예: 7h 31분)는 분으로 변환해주세요.`
+            }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    // 상태에 반영
+    const fieldMap = {
+      sleep_score: 'sleep_score', sleep_total_min: 'sleep_total_min',
+      sleep_deep_min: 'sleep_deep_min', sleep_light_min: 'sleep_light_min',
+      sleep_rem_min: 'sleep_rem_min', sleep_awake_min: 'sleep_awake_min',
+      hr_night_avg: 'hr_night_avg', hr_resting: 'hr_resting',
+      hrv_night_avg: 'hrv_night_avg',
+      body_battery_charged: 'body_battery_charged',
+      body_battery_morning: 'body_battery_morning'
+    };
+
+    const extracted = [];
+    for (const [key, stateKey] of Object.entries(fieldMap)) {
+      if (parsed[key] !== null && parsed[key] !== undefined) {
+        state[stateKey] = parsed[key];
+        const el = document.getElementById(stateKey);
+        if (el) el.value = parsed[key];
+        extracted.push({ key, val: parsed[key] });
+      }
+    }
+
+    // 추출 결과 표시
+    const labels = {
+      sleep_score:'수면점수', sleep_total_min:'총수면(분)',
+      sleep_deep_min:'깊은수면', sleep_light_min:'알음수면',
+      sleep_rem_min:'REM', sleep_awake_min:'각성',
+      hr_night_avg:'밤사이심박', hr_resting:'안정시심박',
+      hrv_night_avg:'HRV', body_battery_charged:'배터리충전',
+      body_battery_morning:'배터리아침'
+    };
+    const grid = document.getElementById('extractedGrid');
+    grid.style.display = 'grid';
+    grid.innerHTML = extracted.map(e => `
+      <div class="extracted-item">
+        <div class="ex-label">${labels[e.key]||e.key}</div>
+        <div class="ex-val">${e.val}</div>
+      </div>
+    `).join('');
+
+    status.className = 'analyze-status ok';
+    status.textContent = `✓ ${extracted.length}개 항목 추출 완료`;
+  } catch(err) {
+    status.className = 'analyze-status err';
+    status.textContent = '분석 실패 — 수동 입력해주세요';
+    console.error(err);
+  }
+  btn.disabled = false;
+}
+
+// ── SUPABASE ──
+async function supaFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...options.headers
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  return res.json().catch(() => null);
+}
+
+async function loadToday() {
+  const today = getToday();
+  try {
+    const data = await supaFetch(`/daily_log?date=eq.${today}&select=*`);
+    if (data && data.length > 0) {
+      applyData(data[0]);
+      showToast('오늘 기록 불러옴');
+    }
+  } catch(e) { console.log('로드 실패:', e); }
+}
+
+function applyData(d) {
+  for (const [key, val] of Object.entries(d)) {
+    if (val === null || val === undefined) continue;
+    if (key in state) state[key] = val;
+    const el = document.getElementById(key);
+    if (el) {
+      if (el.type === 'range' || el.type === 'number' || el.type === 'time') {
+        el.value = val;
+      }
+    }
+  }
+  // 슬라이더 업데이트
+  ['wake_feeling','condition_score','digital_stimulation','overthinking','tension'].forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.value = state[k];
+  });
+  document.getElementById('wfv').textContent = state.wake_feeling;
+  document.getElementById('csv').textContent = state.condition_score;
+  document.getElementById('dsv').textContent = state.digital_stimulation;
+  document.getElementById('otv').textContent = state.overthinking;
+  document.getElementById('tnv').textContent = state.tension;
+}
+
+async function saveAll() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+
+  // 숫자 입력값 동기화
+  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
+    if (inp.id in state) {
+      state[inp.id] = inp.value ? (inp.type === 'number' ? parseFloat(inp.value) : inp.value) : null;
+    }
+  });
+
+  const payload = { ...state, date: getToday() };
+  // 배열 처리
+  if (!payload.stress_source || payload.stress_source.length === 0) payload.stress_source = null;
+
+  try {
+    await supaFetch('/daily_log', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Prefer': 'resolution=merge-duplicates' }
+    });
+    showToast('✓ 저장되었습니다');
+  } catch(e) {
+    showToast('저장 실패: ' + e.message.slice(0,40));
+    console.error(e);
+  }
+  btn.disabled = false;
+  btn.textContent = '저장';
+}
+
+// ── REVIEW ──
+async function renderReview() {
+  try {
+    const data = await supaFetch('/daily_log?select=date,condition_score,sleep_score,hrv_night_avg,hr_resting,cycle_phase&order=date.desc&limit=28');
+    renderHeatmap(data);
+    renderStats(data);
+    renderCycleChart(data);
+  } catch(e) { console.error(e); }
+}
+
+function renderHeatmap(data) {
+  const map = {};
+  data.forEach(d => map[d.date] = d.condition_score);
+  const container = document.getElementById('heatmap');
+  container.innerHTML = '';
+  const today = new Date();
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const cell = document.createElement('div');
+    cell.className = 'hm-cell' + (i === 0 ? ' today' : '');
+    if (map[key]) {
+      cell.classList.add('has-data');
+      const v = map[key];
+      if (v >= 8) cell.classList.add('high');
+      else if (v >= 5) cell.classList.add('mid');
+      else cell.classList.add('low');
+      cell.title = `${key}: ${v}점`;
+    }
+    container.appendChild(cell);
+  }
+}
+
+function renderStats(data) {
+  const last7 = data.slice(0, 7);
+  if (!last7.length) { document.getElementById('statGrid').innerHTML = '<div class="empty-msg" style="grid-column:span 2">기록이 없습니다</div>'; return; }
+  const avg = (key) => {
+    const vals = last7.filter(d => d[key] !== null).map(d => d[key]);
+    if (!vals.length) return '--';
+    return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+  };
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card" style="--card-color:var(--morning)">
+      <div class="s-label">컨디션 평균</div>
+      <div class="s-val">${avg('condition_score')}<span class="s-unit">/ 10</span></div>
+    </div>
+    <div class="stat-card" style="--card-color:var(--health)">
+      <div class="s-label">수면 점수 평균</div>
+      <div class="s-val">${avg('sleep_score')}<span class="s-unit">점</span></div>
+    </div>
+    <div class="stat-card" style="--card-color:var(--joy)">
+      <div class="s-label">HRV 평균</div>
+      <div class="s-val">${avg('hrv_night_avg')}<span class="s-unit">ms</span></div>
+    </div>
+    <div class="stat-card" style="--card-color:var(--career)">
+      <div class="s-label">안정시 심박 평균</div>
+      <div class="s-val">${avg('hr_resting')}<span class="s-unit">bpm</span></div>
+    </div>
+  `;
+}
+
+function renderCycleChart(data) {
+  const phases = ['생리기','난포기','배란기','황체기'];
+  const colors = { '생리기':'#e06060','난포기':'#d4a843','배란기':'#5db870','황체기':'#e07840' };
+  const avgs = {};
+  phases.forEach(p => {
+    const vals = data.filter(d => d.cycle_phase === p && d.condition_score).map(d => d.condition_score);
+    avgs[p] = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+  });
+  const container = document.getElementById('cycleChart');
+  container.innerHTML = phases.map(p => `
+    <div class="bar-row">
+      <div class="bar-dot" style="background:${colors[p]}"></div>
+      <div class="bar-lbl">${p}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${avgs[p] ? avgs[p]*10 : 0}%;background:${colors[p]}"></div></div>
+      <div class="bar-val">${avgs[p] || '--'}</div>
+    </div>
+  `).join('');
+}
+
+// ── EXPORT ──
+async function exportMD() {
+  try {
+    const data = await supaFetch('/daily_log?select=*&order=date.desc&limit=30');
+    const today = getToday();
+    const d = data.find(r => r.date === today) || data[0];
+    if (!d) { showToast('저장된 데이터가 없습니다'); return; }
+
+    const minToHM = (min) => {
+      if (!min) return '--';
+      return `${Math.floor(min/60)}h ${min%60}분`;
+    };
+    const yn = (v) => v ? 'Y' : 'N';
+
+    const md = `---
+date: ${d.date}
+tags: daily-log
+---
+
+# 🌅 Morning Check
+
+## 수면
+- 취침 시간:: ${d.bedtime || '--'}
+- 기상 시간:: ${d.wake_time || '--'}
+- 총 수면:: ${minToHM(d.sleep_total_min)}
+- 수면 점수:: ${d.sleep_score || '--'}
+- 기상 체감:: ${d.wake_feeling || '--'}/5
+
+## 수면 질
+- 중간 각성 횟수:: ${d.night_wakeup_count ?? '--'}
+- 새벽 각성 여부:: ${yn(d.early_wakeup)}
+- 다시 잠들기 어려움:: ${yn(d.hard_to_sleep_again)}
+- 꿈 많음:: ${yn(d.many_dreams)}
+
+## Garmin
+- HRV:: ${d.hrv_night_avg || '--'} ms
+- 안정시 심박(RHR):: ${d.hr_resting || '--'} bpm
+- 밤사이 평균 심박:: ${d.hr_night_avg || '--'} bpm
+- Body Battery 충전:: +${d.body_battery_charged || '--'}
+- Body Battery 아침:: ${d.body_battery_morning || '--'}
+
+## 아침 컨디션
+- 컨디션 점수:: ${d.condition_score || '--'}/10
+- 에너지 느낌:: ${d.energy_feeling || '--'}
+- 집중 상태:: ${d.focus_state || '--'}
+- 감정 상태:: ${d.mood || '--'}
+
+## 신체 지표
+- 몸무게:: ${d.weight_kg || '--'} kg
+- 허리둘레:: ${d.waist_cm || '--'} cm
+- 생리주기:: ${d.cycle_phase || '--'}
+
+---
+
+# ☀️ Day Log
+
+## 카페인
+- 마지막 시간:: ${d.caffeine_time || '--'}
+- 종류:: ${d.caffeine_type || '--'}
+- 잔 수:: ${d.caffeine_cups || '--'}
+
+## 식사
+- 저녁 식사 시간:: ${d.dinner_time || '--'}
+- 취침 전 공복감:: ${d.hunger_before_bed || '--'}
+- 야식:: ${yn(d.late_night_snack)}
+- 수분 과다:: ${yn(d.excess_water)}
+
+## 운동
+- 운동 시간:: ${d.exercise_min || '--'} 분
+- 운동 종류:: ${d.exercise_type || '--'}
+- 운동 강도:: ${d.exercise_intensity || '--'}
+- 걸음 수:: ${d.steps || '--'}
+- 햇빛 노출:: ${d.sunlight_min || '--'} 분
+
+---
+
+# 🧠 Stress / Recovery
+
+## 스트레스 요인
+- ${d.stress_source?.join(', ') || '없음'}
+
+## 회복 활동
+- 산책:: ${yn(d.recovery_walk)}
+- 스트레칭:: ${yn(d.recovery_stretch)}
+- 멍때리기:: ${yn(d.recovery_spacing)}
+- 독서:: ${yn(d.recovery_reading)}
+
+---
+
+# 🌙 Night Check
+
+- 디지털 자극:: ${d.digital_stimulation || '--'}/5
+- 생각 많음:: ${d.overthinking || '--'}/5
+- 긴장감:: ${d.tension || '--'}/5
+- 머리 쓰는 검색:: ${yn(d.mental_browsing)}
+`;
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${d.date}-daily-log.md`;
+    a.click();
+    showToast('✓ .md 파일 다운로드');
+  } catch(e) { showToast('내보내기 실패'); console.error(e); }
+}
+
+async function exportCSV() {
+  try {
+    const data = await supaFetch('/daily_log?select=*&order=date.asc');
+    if (!data.length) { showToast('데이터가 없습니다'); return; }
+    const keys = Object.keys(data[0]).filter(k => k !== 'id' && k !== 'created_at');
+    const csv = [keys.join(','), ...data.map(r => keys.map(k => r[k] ?? '').join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `daily-log-${getToday()}.csv`;
+    a.click();
+    showToast('✓ CSV 다운로드');
+  } catch(e) { showToast('내보내기 실패'); console.error(e); }
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
