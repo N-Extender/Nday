@@ -1145,8 +1145,13 @@ function updateSlider(id, valId) {
 function setSingle(key, val, btn) {
   state[key] = val;
   const grp = btn.closest('.btn-group') || btn.parentElement;
-  grp.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('selected'));
+  grp.querySelectorAll('.btn-opt').forEach(b => {
+    b.classList.remove('selected');
+    b.removeAttribute('data-selected-key');
+  });
   btn.classList.add('selected');
+  btn.setAttribute('data-selected-key', key);
+  btn.setAttribute('data-selected-val', val);
 }
 function setYN(key, val, btn) {
   state[key] = val === 'Y';
@@ -1156,6 +1161,8 @@ function setYN(key, val, btn) {
 }
 function toggleMulti(key, val, btn) {
   btn.classList.toggle('selected');
+  btn.setAttribute('data-multi-key', key);
+  btn.setAttribute('data-multi-val', val);
   if (!state[key]) state[key] = [];
   if (btn.classList.contains('selected')) {
     if (!state[key].includes(val)) state[key].push(val);
@@ -1332,11 +1339,19 @@ async function saveAll() {
       state[inp.id] = inp.value ? (inp.type === 'number' ? parseFloat(inp.value) : inp.value) : null;
     }
   });
-  // 버튼 선택값 동기화 (selected 클래스 기준으로 재확인)
-  document.querySelectorAll('.btn-opt.selected').forEach(btn => {
-    const onclick = btn.getAttribute('onclick') || '';
-    const match = onclick.match(/setSingle\('([^']+)','([^']+)'/);
-    if (match) state[match[1]] = match[2];
+  // 버튼 선택값 동기화 - data속성 + state 직접 확인
+  document.querySelectorAll('.btn-opt.selected[data-selected-key]').forEach(btn => {
+    const key = btn.getAttribute('data-selected-key');
+    const val = btn.getAttribute('data-selected-val');
+    if (key && val) state[key] = val;
+  });
+  // toggleMulti 다중선택 동기화
+  document.querySelectorAll('.btn-opt.selected[data-multi-key]').forEach(btn => {
+    const key = btn.getAttribute('data-multi-key');
+    const val = btn.getAttribute('data-multi-val');
+    if (key && val && Array.isArray(state[key]) && !state[key].includes(val)) {
+      state[key].push(val);
+    }
   });
   // 슬라이더 동기화
   document.querySelectorAll('input[type=range]').forEach(inp => {
@@ -1460,14 +1475,16 @@ async function renderHistory() {
   }
 }
 
-function exportSingleMD(jsonStr) {
-  const d = JSON.parse(jsonStr);
-  const minToHM = (min) => {
-    if (!min) return '--';
-    return Math.floor(min/60) + '시간 ' + (min%60) + '분';
-  };
-  const yn = (v) => v ? 'Y' : 'N';
-  const md = `---
+function exportSingleMD(dateStr) {
+  supaFetch('/daily_log?date=eq.' + dateStr + '&select=*').then(data => {
+    if (!data || !data.length) { showToast('데이터 없음'); return; }
+    const d = data[0];
+    const minToHM = (min) => {
+      if (!min) return '--';
+      return Math.floor(min/60) + '시간 ' + (min%60) + '분';
+    };
+    const yn = (v) => v ? 'Y' : 'N';
+    const md = `---
 date: ${d.date}
 tags: daily-log
 ---
@@ -1478,7 +1495,6 @@ tags: daily-log
 - 취침 시간:: ${d.bedtime || '--'}
 - 기상 시간:: ${d.wake_time || '--'}
 - 총 수면:: ${minToHM(d.sleep_total_min)}
-- 수면 점수:: ${d.sleep_score || '--'}
 - 기상 체감:: ${d.wake_feeling || '--'}/5
 
 ## 수면 질
@@ -1549,11 +1565,13 @@ tags: daily-log
 - 긴장감:: ${d.tension || '--'}/5
 - 머리 쓰는 검색:: ${yn(d.mental_browsing)}
 `;
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = d.date + '-daily-log.md';
-  a.click();
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = d.date + '-daily-log.md';
+    a.click();
+    showToast('✓ ' + d.date + ' .md 다운로드');
+  }).catch(e => { showToast('내보내기 실패'); console.error(e); });
 }
 
 // ── REVIEW ──
