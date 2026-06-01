@@ -547,7 +547,7 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log</h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.0.8</span></h1>
     <div class="date" id="dateLabel">—</div>
   </div>
   <button class="save-btn" onclick="saveAll()" id="saveBtn">저장</button>
@@ -1045,8 +1045,10 @@ body {
 
 <!-- ===== PANEL: HISTORY ===== -->
 <div class="panel" id="panel-history">
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
-    <input type="month" id="historyMonth" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:9px 12px;outline:none" onchange="renderHistory()">
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:16px">
+    <button onclick="shiftMonth(-1)" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">‹</button>
+    <input type="month" id="historyMonth" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:9px 12px;outline:none;text-align:center" onchange="renderHistory()">
+    <button onclick="shiftMonth(1)" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">›</button>
   </div>
   <div id="historyList"></div>
 </div>
@@ -1130,6 +1132,7 @@ document.getElementById('dateLabel').textContent = formatDateKR(getToday());
 
 function updateEditingBanner() {
   const banner = document.getElementById('editingBanner');
+  if (!banner) return;
   if (editingDate && editingDate !== getToday()) {
     banner.textContent = '✏️ ' + formatDateKR(editingDate) + ' 수정 중';
     banner.style.display = 'block';
@@ -1513,6 +1516,15 @@ async function saveAll() {
 
 
 // ── HISTORY ──
+function shiftMonth(delta) {
+  const el = document.getElementById('historyMonth');
+  if (!el.value) el.value = getMonthDefault();
+  const [y, m] = el.value.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  el.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  renderHistory();
+}
+
 function getMonthDefault() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
