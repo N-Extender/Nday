@@ -11,13 +11,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
-  --bg: #0a0a0c;
-  --surface: #131317;
-  --surface2: #1a1a20;
-  --border: #252530;
-  --border2: #2e2e3a;
-  --text: #e2ddd6;
-  --muted: #6a6a7a;
+  --bg: #050507;
+  --surface: #0f0f14;
+  --surface2: #17171e;
+  --border: #222230;
+  --border2: #2a2a38;
+  --text: #f0ece4;
+  --muted: #8a8a9a;
   --faint: #3a3a4a;
 
   /* 상징색 */
@@ -594,7 +594,7 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.4</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.5</span></h1>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <button onclick="shiftDay(-1)" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -683,29 +683,26 @@ body {
     <div class="section-title" style="--section-color:var(--health)">
       <div class="dot"></div>⌚ Garmin (간밤 기준)
     </div>
-    <div class="field">
-      <div class="field-label">수면 점수</div>
-      <div class="num-input">
-        <input type="number" id="sleep_score" placeholder="0~100" min="0" max="100">
-        <span class="num-unit">점</span>
-      </div>
-    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="field">
-        <div class="field-label">심박변이도 (HRV)</div>
-        <div class="num-input"><input type="number" id="hrv_night_avg" placeholder="51"><span class="num-unit">ms</span></div>
+        <div class="field-label">Body Battery 아침</div>
+        <div class="num-input"><input type="number" id="body_battery_morning" placeholder="72"><span class="num-unit"></span></div>
       </div>
       <div class="field">
-        <div class="field-label">안정시 심박 (RHR)</div>
-        <div class="num-input"><input type="number" id="hr_resting" placeholder="49"><span class="num-unit">bpm</span></div>
+        <div class="field-label">수면 점수</div>
+        <div class="num-input"><input type="number" id="sleep_score" placeholder="0~100" min="0" max="100"><span class="num-unit">점</span></div>
       </div>
       <div class="field">
         <div class="field-label">Body Battery 충전량</div>
         <div class="num-input"><input type="number" id="body_battery_charged" placeholder="+44"><span class="num-unit"></span></div>
       </div>
       <div class="field">
-        <div class="field-label">Body Battery Morning</div>
-        <div class="num-input"><input type="number" id="body_battery_morning" placeholder="72"><span class="num-unit"></span></div>
+        <div class="field-label">안정시 심박 (RHR)</div>
+        <div class="num-input"><input type="number" id="hr_resting" placeholder="49"><span class="num-unit">bpm</span></div>
+      </div>
+      <div class="field">
+        <div class="field-label">심박변이도 (HRV)</div>
+        <div class="num-input"><input type="number" id="hrv_night_avg" placeholder="51"><span class="num-unit">ms</span></div>
       </div>
     </div>
   </div>
@@ -1093,15 +1090,15 @@ body {
 <!-- ===== PANEL: HISTORY ===== -->
 <div class="panel" id="panel-history">
 
-  <!-- 월간 달력 -->
-  <div class="review-block">
-    <div id="calendarGrid"></div>
-  </div>
-
   <div style="display:flex;gap:6px;align-items:center;margin-bottom:16px">
     <button onclick="shiftMonth(-1)" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">‹</button>
     <input type="month" id="historyMonth" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:9px 12px;outline:none;text-align:center" onchange="renderHistory()">
     <button onclick="shiftMonth(1)" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">›</button>
+  </div>
+
+  <!-- 월간 달력 -->
+  <div class="review-block">
+    <div id="calendarGrid"></div>
   </div>
   <div id="historyList"></div>
 </div>
