@@ -1523,30 +1523,31 @@ async function renderHistory() {
   if (!monthEl.value) monthEl.value = getMonthDefault();
   const month = monthEl.value;
   const [y, m] = month.split('-');
-  const from = `${y}-${m}-01`;
+  const from = y + '-' + m + '-01';
   const lastDay = new Date(y, m, 0).getDate();
-  const to = `${y}-${m}-${String(lastDay).padStart(2,'0')}`;
+  const to = y + '-' + m + '-' + String(lastDay).padStart(2,'0');
 
   const container = document.getElementById('historyList');
   container.innerHTML = '<div class="empty-msg">불러오는 중...</div>';
 
   try {
-    const data = await supaFetch(`/daily_log?date=gte.${from}&date=lte.${to}&select=*&order=date.desc`);
+    const data = await supaFetch('/daily_log?date=gte.' + from + '&date=lte.' + to + '&select=*&order=date.desc');
     if (!data || !data.length) {
       container.innerHTML = '<div class="empty-msg">이 달의 기록이 없습니다.</div>';
       return;
     }
     const minToHM = (min) => {
-      if (!min) return '--';
+      if (!min && min !== 0) return '--';
       return Math.floor(min/60) + 'h ' + (min%60) + '분';
     };
-    const yn = (v) => v ? 'Y' : 'N';
     const cycleColor = { '생리기':'#e06060','난포기':'#d4a843','배란기':'#5db870','황체기':'#e07840' };
 
-    container.innerHTML = data.map(d => `
+    container.innerHTML = data.map(d => {
+      const dateStr = d.date;
+      return `
       <div class="journal-card" style="margin-bottom:12px">
         <div class="jc-header">
-          <span class="jc-date">${formatDateKR(d.date)}</span>
+          <span class="jc-date">${formatDateKR(dateStr)}</span>
           <div style="display:flex;gap:8px;align-items:center">
             ${d.cycle_phase ? `<span style="font-size:.6rem;padding:2px 7px;border-radius:10px;border:1px solid ${cycleColor[d.cycle_phase]};color:${cycleColor[d.cycle_phase]}">${d.cycle_phase}</span>` : ''}
             <span class="jc-score">컨디션 ${d.condition_score || '--'}/10</span>
@@ -1567,17 +1568,29 @@ async function renderHistory() {
               <div style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--career)">${d.body_battery_morning || '--'}</div>
             </div>
           </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             ${d.energy_feeling ? `<span class="tag" style="--tag-color:var(--morning)">${d.energy_feeling}</span>` : ''}
             ${d.focus_state ? `<span class="tag" style="--tag-color:var(--morning)">${d.focus_state}</span>` : ''}
             ${d.mood ? `<span class="tag" style="--tag-color:var(--morning)">${d.mood}</span>` : ''}
-            ${d.exercise_type ? `<span class="tag" style="--tag-color:var(--day)">${d.exercise_type} ${d.exercise_min||''}분</span>` : ''}
+            ${d.exercise_type ? `<span class="tag" style="--tag-color:var(--day)">${d.exercise_type} ${d.exercise_min || ''}분</span>` : ''}
           </div>
-          <button onclick="exportSingleMD('${d.date}')" style="font-family:'DM Mono',monospace;font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted);cursor:pointer" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">📄 .md</button>
-          <button onclick="loadDateData(\'${d.date}\')" style="font-family:\'DM Mono\',monospace;font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--morning);border-radius:3px;color:var(--morning);cursor:pointer;margin-left:4px">✏️ 수정</button>
+          <div style="display:flex;gap:6px">
+            <button id="md-btn-${dateStr}" style="font-family:'DM Mono',monospace;font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted);cursor:pointer">📄 .md</button>
+            <button id="edit-btn-${dateStr}" style="font-family:'DM Mono',monospace;font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--morning);border-radius:3px;color:var(--morning);cursor:pointer">✏️ 수정</button>
+          </div>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
+
+    // 버튼 이벤트 — innerHTML 후 addEventListener로 안전하게 연결
+    data.forEach(d => {
+      const dateStr = d.date;
+      const mdBtn = document.getElementById('md-btn-' + dateStr);
+      const editBtn = document.getElementById('edit-btn-' + dateStr);
+      if (mdBtn) mdBtn.addEventListener('click', () => exportSingleMD(dateStr));
+      if (editBtn) editBtn.addEventListener('click', () => loadDateData(dateStr));
+    });
+
   } catch(e) {
     container.innerHTML = '<div class="empty-msg">불러오기 실패</div>';
     console.error(e);
