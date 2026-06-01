@@ -594,8 +594,12 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.0</span></h1>
-    <div class="date" id="dateLabel">—</div>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.1</span></h1>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+      <button onclick="shiftDay(-1)" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">‹</button>
+      <div class="date" id="dateLabel">—</div>
+      <button onclick="shiftDay(1)" id="nextDayBtn" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">›</button>
+    </div>
   </div>
   <button class="save-btn" onclick="saveAll()" id="saveBtn">저장</button>
 </div>
@@ -1181,10 +1185,19 @@ function formatDateKR(s) {
   return `${y}년 ${m}월 ${d}일 (${days[new Date(y,m-1,d).getDay()]})`;
 }
 
-document.getElementById('dateLabel').textContent = formatDateKR(getToday());
+// dateLabel은 updateEditingBanner에서 관리
 
 function updateEditingBanner() {
   const banner = document.getElementById('editingBanner');
+  const dateLabel = document.getElementById('dateLabel');
+  const nextBtn = document.getElementById('nextDayBtn');
+  const displayDate = editingDate || getToday();
+
+  // dateLabel 업데이트
+  if (dateLabel) dateLabel.textContent = formatDateKR(displayDate);
+  // 오늘이면 다음 화살표 숨기기
+  if (nextBtn) nextBtn.style.opacity = (displayDate >= getToday()) ? '0.2' : '1';
+
   if (!banner) return;
   if (editingDate && editingDate !== getToday()) {
     banner.textContent = '✏️ ' + formatDateKR(editingDate) + ' 수정 중';
@@ -1194,6 +1207,7 @@ function updateEditingBanner() {
     editingDate = null;
   }
 }
+updateEditingBanner();
 loadToday();
 
 // ── TAB ──
@@ -1606,6 +1620,18 @@ async function saveAll() {
 
 
 // ── HISTORY ──
+function shiftDay(delta) {
+  const base = editingDate || getToday();
+  const [y, m, d] = base.split('-').map(Number);
+  const newDate = new Date(y, m-1, d + delta);
+  const newStr = newDate.getFullYear() + '-' +
+    String(newDate.getMonth()+1).padStart(2,'0') + '-' +
+    String(newDate.getDate()).padStart(2,'0');
+  // 미래 날짜는 오늘까지만
+  if (newStr > getToday()) return;
+  loadDateData(newStr);
+}
+
 function shiftMonth(delta) {
   const el = document.getElementById('historyMonth');
   if (!el.value) el.value = getMonthDefault();
