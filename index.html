@@ -594,7 +594,7 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.3</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.4</span></h1>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <button onclick="shiftDay(-1)" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -1579,8 +1579,8 @@ async function saveAll() {
   });
 
   try {
-    const today = getToday();
-    const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/daily_log?date=eq.${today}&select=id`, {
+    const targetDate = payload.date; // editingDate 또는 오늘
+    const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/daily_log?date=eq.${targetDate}&select=id`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const existing = await checkRes.json();
@@ -1588,7 +1588,7 @@ async function saveAll() {
 
     const res = await fetch(
       exists
-        ? `${SUPABASE_URL}/rest/v1/daily_log?date=eq.${today}`
+        ? `${SUPABASE_URL}/rest/v1/daily_log?date=eq.${targetDate}`
         : `${SUPABASE_URL}/rest/v1/daily_log`,
       {
         method: exists ? 'PATCH' : 'POST',
@@ -1605,9 +1605,14 @@ async function saveAll() {
       const err = await res.text();
       throw new Error(err);
     }
-    showToast('✓ ' + (editingDate || getToday()) + ' 저장');
+    const savedDate = payload.date;
+    showToast('✓ ' + savedDate + ' 저장');
     editingDate = null;
     updateEditingBanner();
+    // 오늘 탭으로 돌아온 경우 오늘 데이터 다시 로드
+    if (savedDate !== getToday()) {
+      await loadToday();
+    }
   } catch(e) {
     showToast('저장 실패: ' + e.message.slice(0,60));
     console.error('저장 오류:', e);
