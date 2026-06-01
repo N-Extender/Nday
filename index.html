@@ -594,7 +594,7 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.0.9</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.0</span></h1>
     <div class="date" id="dateLabel">—</div>
   </div>
   <button class="save-btn" onclick="saveAll()" id="saveBtn">저장</button>
@@ -1364,11 +1364,10 @@ async function supaFetch(path, options = {}) {
 }
 
 async function loadDateData(dateStr) {
-  // state 초기화
+  // 1. state 완전 초기화
   Object.keys(state).forEach(k => {
     if (typeof state[k] === 'boolean') state[k] = false;
     else if (Array.isArray(state[k])) state[k] = [];
-    else if (typeof state[k] === 'number') state[k] = (k.includes('feeling') || k.includes('score') || k.includes('stimulation') || k.includes('thinking') || k.includes('tension')) ? 3 : null;
     else state[k] = null;
   });
   state.wake_feeling = 3;
@@ -1377,12 +1376,50 @@ async function loadDateData(dateStr) {
   state.overthinking = 3;
   state.tension = 3;
 
+  // 2. 화면 초기화 (숫자·시간 input 비우기)
+  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
+    if (inp.id in state) inp.value = '';
+  });
+  // 슬라이더 초기화
+  const sliderDefaults = { wake_feeling:3, condition_score:5, digital_stimulation:3, overthinking:3, tension:3 };
+  Object.entries(sliderDefaults).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  document.getElementById('wfv').textContent = '3';
+  document.getElementById('csv').textContent = '5';
+  document.getElementById('dsv').textContent = '3';
+  document.getElementById('otv').textContent = '3';
+  document.getElementById('tnv').textContent = '3';
+  // 버튼 선택 초기화
+  document.querySelectorAll('.btn-opt').forEach(b => {
+    b.classList.remove('selected');
+    b.removeAttribute('data-selected-key');
+  });
+  document.querySelectorAll('.yn-btn').forEach(b => {
+    b.classList.remove('y-selected', 'n-selected');
+  });
+  document.querySelectorAll('[data-mkey]').forEach(b => b.classList.remove('selected'));
+  // Y/N 버튼 N 기본값
+  document.querySelectorAll('.yn-btn').forEach(btn => {
+    const oc = btn.getAttribute('onclick') || '';
+    if (oc.includes(",'N',")) btn.classList.add('n-selected');
+  });
+  // 수면 표시 초기화
+  const sleepDisplay = document.getElementById('sleep_total_display');
+  if (sleepDisplay) sleepDisplay.textContent = '';
+  const sleepTotal = document.getElementById('sleep_total_min');
+  if (sleepTotal) sleepTotal.value = '';
+
+  // 3. 해당 날짜 데이터 불러오기 (있으면 복원)
   try {
     const data = await supaFetch('/daily_log?date=eq.' + dateStr + '&select=*');
     if (data && data.length > 0) {
       applyData(data[0]);
     }
   } catch(e) { console.error(e); }
+
+  // 4. 편집 날짜 설정 및 탭 이동
   editingDate = dateStr;
   updateEditingBanner();
   switchTab('morning');
