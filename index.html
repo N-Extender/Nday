@@ -594,7 +594,7 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.1.5</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.2.0</span></h1>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <button onclick="shiftDay(-1)" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -855,6 +855,7 @@ body {
       <div class="btn-group" style="--opt-color:var(--day)">
         <button class="btn-opt" data-key="caffeine_type" data-val="아메리카노" onclick="setSingle('caffeine_type','아메리카노',this)">아메리카노</button>
         <button class="btn-opt" data-key="caffeine_type" data-val="라떼" onclick="setSingle('caffeine_type','라떼',this)">라떼</button>
+        <button class="btn-opt" data-key="caffeine_type" data-val="안마심" onclick="setSingle('caffeine_type','안마심',this)">안마심</button>
         <button class="btn-opt" data-key="caffeine_type" data-val="기타" onclick="setSingle('caffeine_type','기타',this)">기타</button>
       </div>
     </div>
@@ -916,6 +917,7 @@ body {
         <button class="btn-opt" data-mkey="exercise_type" data-mval="걷기" onclick="toggleMulti('exercise_type','걷기',this)">걷기</button>
         <button class="btn-opt" data-mkey="exercise_type" data-mval="수영" onclick="toggleMulti('exercise_type','수영',this)">수영</button>
         <button class="btn-opt" data-mkey="exercise_type" data-mval="요가" onclick="toggleMulti('exercise_type','요가',this)">요가</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="휴식" onclick="toggleMulti('exercise_type','휴식',this)">휴식</button>
         <button class="btn-opt" data-mkey="exercise_type" data-mval="기타" onclick="toggleMulti('exercise_type','기타',this)">기타</button>
       </div>
     </div>
@@ -1062,7 +1064,8 @@ body {
 
   <div class="divider"></div>
   <div class="review-title">내보내기</div>
-  <button class="export-btn" onclick="exportMD()">📄 옵시디언 .md 내보내기</button>
+  <button class="export-btn" onclick="exportMD()">📄 오늘 .md 내보내기</button>
+  <button class="export-btn" onclick="exportWeeklyMD()">📅 주간 .md 내보내기 (최근 7일)</button>
   <button class="export-btn" onclick="exportCSV()">📊 CSV 내보내기</button>
 
 </div>
@@ -2088,6 +2091,104 @@ tags: daily-log
     a.click();
     showToast('✓ .md 파일 다운로드');
   } catch(e) { showToast('내보내기 실패'); console.error(e); }
+}
+
+async function exportWeeklyMD() {
+  try {
+    // 최근 7일 날짜 범위 계산
+    const today = getToday();
+    const d7 = new Date();
+    d7.setDate(d7.getDate() - 6);
+    const weekStart = `${d7.getFullYear()}-${String(d7.getMonth()+1).padStart(2,'0')}-${String(d7.getDate()).padStart(2,'0')}`;
+
+    const data = await supaFetch(`/daily_log?select=*&order=date.asc&date=gte.${weekStart}&date=lte.${today}`);
+    if (!data.length) { showToast('최근 7일 데이터가 없습니다'); return; }
+
+    const minToHM = (min) => {
+      if (!min) return '--';
+      return `${Math.floor(min/60)}h ${min%60}분`;
+    };
+    const yn = (v) => v ? 'Y' : 'N';
+
+    // 주간 요약 통계
+    const avg = (key) => {
+      const vals = data.filter(d => d[key] !== null && d[key] !== undefined).map(d => d[key]);
+      if (!vals.length) return '--';
+      return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+    };
+
+    let md = `---
+date_range: ${weekStart} ~ ${today}
+tags: weekly-log
+---
+
+# 📅 Weekly Log — ${weekStart} ~ ${today}
+
+## 주간 요약
+
+| 지표 | 평균 |
+|------|------|
+| 컨디션 점수 | ${avg('condition_score')} / 10 |
+| 수면 점수 | ${avg('sleep_score')} 점 |
+| HRV | ${avg('hrv_night_avg')} ms |
+| 안정시 심박 | ${avg('hr_resting')} bpm |
+| 총 수면 | ${avg('sleep_total_min') !== '--' ? minToHM(Math.round(parseFloat(avg('sleep_total_min')))) : '--'} |
+
+---
+
+`;
+
+    // 일별 상세
+    data.forEach(d => {
+      const dayDate = new Date(d.date + 'T00:00:00');
+      const days = ['일','월','화','수','목','금','토'];
+      const dayLabel = `${d.date} (${days[dayDate.getDay()]})`;
+
+      md += `## 🌅 ${dayLabel}
+
+### 수면
+- 취침 / 기상: ${d.bedtime || '--'} → ${d.wake_time || '--'}
+- 총 수면: ${minToHM(d.sleep_total_min)} | 수면 점수: ${d.sleep_score || '--'}점
+- 기상 체감: ${d.wake_feeling || '--'}/5
+- 각성 횟수: ${d.night_wakeup_count ?? '--'} | 새벽 각성: ${yn(d.early_wakeup)} | 꿈 많음: ${yn(d.many_dreams)}
+
+### Garmin
+- HRV: ${d.hrv_night_avg || '--'} ms | RHR: ${d.hr_resting || '--'} bpm
+- Body Battery 충전: +${d.body_battery_charged || '--'} | 아침: ${d.body_battery_morning || '--'}
+
+### 아침 컨디션
+- 컨디션: **${d.condition_score || '--'}/10** | 에너지: ${d.energy_feeling || '--'} | 집중: ${d.focus_state || '--'} | 감정: ${d.mood || '--'}
+- 생리주기: ${d.cycle_phase || '--'}
+
+### 신체
+- 몸무게: ${d.weight_kg || '--'} kg | 허리: ${d.waist_cm || '--'} cm
+
+### Day
+- 카페인: ${d.caffeine_type || '--'} ${d.caffeine_cups || '--'}잔 (${d.caffeine_time || '--'})
+- 운동: ${Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'} ${d.exercise_min || '--'}분 (강도: ${d.exercise_intensity || '--'})
+- 걸음 수: ${d.steps || '--'} | 햇빛: ${d.sunlight_min || '--'}분
+- 야식: ${yn(d.late_night_snack)} | 수분 과다: ${yn(d.excess_water)}
+
+### Stress / Recovery
+- 스트레스: ${d.stress_source?.join(', ') || '없음'}
+- 회복: 산책 ${yn(d.recovery_walk)} | 스트레칭 ${yn(d.recovery_stretch)} | 멍때리기 ${yn(d.recovery_spacing)} | 독서 ${yn(d.recovery_reading)}
+
+### Night
+- 디지털 자극: ${d.digital_stimulation || '--'}/5 | 생각 많음: ${d.overthinking || '--'}/5 | 긴장감: ${d.tension || '--'}/5
+- 머리 쓰는 검색: ${yn(d.mental_browsing)}
+
+---
+
+`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `weekly-log-${weekStart}.md`;
+    a.click();
+    showToast(`✓ 주간 .md 다운로드 (${data.length}일)`);
+  } catch(e) { showToast('내보내기 실패: ' + e.message); console.error(e); }
 }
 
 async function exportCSV() {
