@@ -659,21 +659,21 @@ body {
       <div class="field-label">새벽 각성</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('early_wakeup','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('early_wakeup','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('early_wakeup','N',this)">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">다시 잠들기 어려움</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('hard_to_sleep_again','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('hard_to_sleep_again','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('hard_to_sleep_again','N',this)">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">꿈 많음</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('many_dreams','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('many_dreams','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('many_dreams','N',this)">N</button>
       </div>
     </div>
   </div>
@@ -882,14 +882,14 @@ body {
       <div class="field-label">야식</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('late_night_snack','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('late_night_snack','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('late_night_snack','N',this)">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">수분 과다</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('excess_water','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('excess_water','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('excess_water','N',this)">N</button>
       </div>
     </div>
   </div>
@@ -969,28 +969,28 @@ body {
       <div class="field-label">산책</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('recovery_walk','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('recovery_walk','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('recovery_walk','N',this)">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">스트레칭</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('recovery_stretch','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('recovery_stretch','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('recovery_stretch','N',this)">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">멍때리기</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('recovery_spacing','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('recovery_spacing','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('recovery_spacing','N',this)">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">독서</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('recovery_reading','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('recovery_reading','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('recovery_reading','N',this)">N</button>
       </div>
     </div>
   </div>
@@ -1037,7 +1037,7 @@ body {
       <div class="field-label">머리 쓰는 검색</div>
       <div class="yn-group">
         <button class="yn-btn" onclick="setYN('mental_browsing','Y',this)">Y</button>
-        <button class="yn-btn n-selected" onclick="setYN('mental_browsing','N',this)">N</button>
+        <button class="yn-btn" onclick="setYN('mental_browsing','N',this)">N</button>
       </div>
     </div>
   </div>
@@ -1125,20 +1125,20 @@ const state = {
   weight_kg: null, waist_cm: null, steps: null,
   bedtime: null, wake_time: null,
   wake_feeling: 3, night_wakeup_count: null,
-  early_wakeup: false, hard_to_sleep_again: false, many_dreams: false,
+  early_wakeup: null, hard_to_sleep_again: null, many_dreams: null,
   condition_score: 5,
   energy_feeling: null, focus_state: null, mood: null,
   cycle_phase: null,
   caffeine_time: null, caffeine_type: null, caffeine_cups: null,
   dinner_time: null, hunger_before_bed: null,
-  late_night_snack: false, excess_water: false,
+  late_night_snack: null, excess_water: null,
   exercise_min: null, exercise_type: [], exercise_intensity: null,
   sunlight_min: null,
   stress_source: [],
-  recovery_walk: false, recovery_stretch: false,
-  recovery_spacing: false, recovery_reading: false,
+  recovery_walk: null, recovery_stretch: null,
+  recovery_spacing: null, recovery_reading: null,
   digital_stimulation: 3, overthinking: 3,
-  mental_browsing: false, tension: 3,
+  mental_browsing: null, tension: 3,
   digestion: 3,
   digestion_chest: null,
   digestion_esophagus: null,
