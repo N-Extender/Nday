@@ -2100,7 +2100,7 @@ async function exportWeeklyMD() {
     d7.setDate(d7.getDate() - 6);
     const weekStart = `${d7.getFullYear()}-${String(d7.getMonth()+1).padStart(2,'0')}-${String(d7.getDate()).padStart(2,'0')}`;
 
-    const data = await supaFetch(`/daily_log?select=*&order=date.asc&date=gte.${weekStart}&date=lte.${today}`);
+    const data = await supaFetch(`/daily_log?date=gte.${weekStart}&date=lte.${today}&select=*&order=date.asc`);
     if (!data.length) { showToast('최근 7일 데이터가 없습니다'); return; }
 
     const minToHM = (min) => {
