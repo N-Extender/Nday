@@ -2095,7 +2095,6 @@ tags: daily-log
 
 async function exportWeeklyMD() {
   try {
-    // 최근 7일 날짜 범위 계산
     const today = getToday();
     const d7 = new Date();
     d7.setDate(d7.getDate() - 6);
@@ -2110,84 +2109,104 @@ async function exportWeeklyMD() {
     };
     const yn = (v) => v ? 'Y' : 'N';
 
-    // 주간 요약 통계
-    const avg = (key) => {
-      const vals = data.filter(d => d[key] !== null && d[key] !== undefined).map(d => d[key]);
-      if (!vals.length) return '--';
-      return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
-    };
-
-    let md = `---
-date_range: ${weekStart} ~ ${today}
-tags: weekly-log
+    // 각 날짜별로 개별 .md 파일 다운로드 (순차적으로 약간의 딜레이)
+    for (let i = 0; i < data.length; i++) {
+      const d = data[i];
+      const md = `---
+date: ${d.date}
+tags: daily-log
 ---
 
-# 📅 Weekly Log — ${weekStart} ~ ${today}
+# 🌅 Morning Check
 
-## 주간 요약
+## 수면
+- 취침 시간:: ${d.bedtime || '--'}
+- 기상 시간:: ${d.wake_time || '--'}
+- 총 수면:: ${minToHM(d.sleep_total_min)}
+- 수면 점수:: ${d.sleep_score || '--'}
+- 기상 체감:: ${d.wake_feeling || '--'}/5
 
-| 지표 | 평균 |
-|------|------|
-| 컨디션 점수 | ${avg('condition_score')} / 10 |
-| 수면 점수 | ${avg('sleep_score')} 점 |
-| HRV | ${avg('hrv_night_avg')} ms |
-| 안정시 심박 | ${avg('hr_resting')} bpm |
-| 총 수면 | ${avg('sleep_total_min') !== '--' ? minToHM(Math.round(parseFloat(avg('sleep_total_min')))) : '--'} |
+## 수면 질
+- 중간 각성 횟수:: ${d.night_wakeup_count ?? '--'}
+- 새벽 각성 여부:: ${yn(d.early_wakeup)}
+- 다시 잠들기 어려움:: ${yn(d.hard_to_sleep_again)}
+- 꿈 많음:: ${yn(d.many_dreams)}
+
+## Garmin
+- HRV:: ${d.hrv_night_avg || '--'} ms
+- 안정시 심박(RHR):: ${d.hr_resting || '--'} bpm
+- 밤사이 평균 심박:: ${d.hr_night_avg || '--'} bpm
+- Body Battery 충전:: +${d.body_battery_charged || '--'}
+- Body Battery 아침:: ${d.body_battery_morning || '--'}
+
+## 아침 컨디션
+- 컨디션 점수:: ${d.condition_score || '--'}/10
+- 에너지 느낌:: ${d.energy_feeling || '--'}
+- 집중 상태:: ${d.focus_state || '--'}
+- 감정 상태:: ${d.mood || '--'}
+
+## 신체 지표
+- 몸무게:: ${d.weight_kg || '--'} kg
+- 허리둘레:: ${d.waist_cm || '--'} cm
+- 생리주기:: ${d.cycle_phase || '--'}
 
 ---
 
+# ☀️ Day Log
+
+## 카페인
+- 마지막 시간:: ${d.caffeine_time || '--'}
+- 종류:: ${d.caffeine_type || '--'}
+- 잔 수:: ${d.caffeine_cups || '--'}
+
+## 식사
+- 저녁 식사 시간:: ${d.dinner_time || '--'}
+- 취침 전 공복감:: ${d.hunger_before_bed || '--'}
+- 야식:: ${yn(d.late_night_snack)}
+- 수분 과다:: ${yn(d.excess_water)}
+
+## 운동
+- 운동 시간:: ${d.exercise_min || '--'} 분
+- 운동 종류:: ${Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'}
+- 운동 강도:: ${d.exercise_intensity || '--'}
+- 걸음 수:: ${d.steps || '--'}
+- 햇빛 노출:: ${d.sunlight_min || '--'} 분
+
+---
+
+# 🧠 Stress / Recovery
+
+## 스트레스 요인
+- ${d.stress_source?.join(', ') || '없음'}
+
+## 회복 활동
+- 산책:: ${yn(d.recovery_walk)}
+- 스트레칭:: ${yn(d.recovery_stretch)}
+- 멍때리기:: ${yn(d.recovery_spacing)}
+- 독서:: ${yn(d.recovery_reading)}
+
+---
+
+# 🌙 Night Check
+
+- 디지털 자극:: ${d.digital_stimulation || '--'}/5
+- 생각 많음:: ${d.overthinking || '--'}/5
+- 긴장감:: ${d.tension || '--'}/5
+- 머리 쓰는 검색:: ${yn(d.mental_browsing)}
 `;
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${d.date}-daily-log.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      // 브라우저가 다운로드를 차단하지 않도록 짧은 딜레이
+      await new Promise(r => setTimeout(r, 300));
+    }
 
-    // 일별 상세
-    data.forEach(d => {
-      const dayDate = new Date(d.date + 'T00:00:00');
-      const days = ['일','월','화','수','목','금','토'];
-      const dayLabel = `${d.date} (${days[dayDate.getDay()]})`;
-
-      md += `## 🌅 ${dayLabel}
-
-### 수면
-- 취침 / 기상: ${d.bedtime || '--'} → ${d.wake_time || '--'}
-- 총 수면: ${minToHM(d.sleep_total_min)} | 수면 점수: ${d.sleep_score || '--'}점
-- 기상 체감: ${d.wake_feeling || '--'}/5
-- 각성 횟수: ${d.night_wakeup_count ?? '--'} | 새벽 각성: ${yn(d.early_wakeup)} | 꿈 많음: ${yn(d.many_dreams)}
-
-### Garmin
-- HRV: ${d.hrv_night_avg || '--'} ms | RHR: ${d.hr_resting || '--'} bpm
-- Body Battery 충전: +${d.body_battery_charged || '--'} | 아침: ${d.body_battery_morning || '--'}
-
-### 아침 컨디션
-- 컨디션: **${d.condition_score || '--'}/10** | 에너지: ${d.energy_feeling || '--'} | 집중: ${d.focus_state || '--'} | 감정: ${d.mood || '--'}
-- 생리주기: ${d.cycle_phase || '--'}
-
-### 신체
-- 몸무게: ${d.weight_kg || '--'} kg | 허리: ${d.waist_cm || '--'} cm
-
-### Day
-- 카페인: ${d.caffeine_type || '--'} ${d.caffeine_cups || '--'}잔 (${d.caffeine_time || '--'})
-- 운동: ${Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'} ${d.exercise_min || '--'}분 (강도: ${d.exercise_intensity || '--'})
-- 걸음 수: ${d.steps || '--'} | 햇빛: ${d.sunlight_min || '--'}분
-- 야식: ${yn(d.late_night_snack)} | 수분 과다: ${yn(d.excess_water)}
-
-### Stress / Recovery
-- 스트레스: ${d.stress_source?.join(', ') || '없음'}
-- 회복: 산책 ${yn(d.recovery_walk)} | 스트레칭 ${yn(d.recovery_stretch)} | 멍때리기 ${yn(d.recovery_spacing)} | 독서 ${yn(d.recovery_reading)}
-
-### Night
-- 디지털 자극: ${d.digital_stimulation || '--'}/5 | 생각 많음: ${d.overthinking || '--'}/5 | 긴장감: ${d.tension || '--'}/5
-- 머리 쓰는 검색: ${yn(d.mental_browsing)}
-
----
-
-`;
-    });
-
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `weekly-log-${weekStart}.md`;
-    a.click();
-    showToast(`✓ 주간 .md 다운로드 (${data.length}일)`);
+    showToast(`✓ ${data.length}개 .md 파일 다운로드 완료`);
   } catch(e) { showToast('내보내기 실패: ' + e.message); console.error(e); }
 }
 
