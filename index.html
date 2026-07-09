@@ -1115,35 +1115,38 @@ const SUPABASE_KEY = 'sb_publishable_EqbNC8netAXOt62V56O-tQ_XpCi4sHq';
 const CLAUDE_API   = 'https://api.anthropic.com/v1/messages';
 
 // ── STATE ──
-const state = {
-  // 기기
-  sleep_score: null, sleep_total_min: null, sleep_deep_min: null,
-  sleep_light_min: null, sleep_rem_min: null, sleep_awake_min: null,
-  hr_night_avg: null, hr_resting: null, hrv_night_avg: null,
-  body_battery_charged: null, body_battery_morning: null,
-  // 수동
-  weight_kg: null, waist_cm: null, steps: null,
-  bedtime: null, wake_time: null,
-  wake_feeling: 3, night_wakeup_count: null,
-  early_wakeup: null, hard_to_sleep_again: null, many_dreams: null,
-  condition_score: 5,
-  energy_feeling: null, focus_state: null, mood: null,
-  cycle_phase: null,
-  caffeine_time: null, caffeine_type: null, caffeine_cups: null,
-  dinner_time: null, hunger_before_bed: null,
-  late_night_snack: null, excess_water: null,
-  exercise_min: null, exercise_type: [], exercise_intensity: null,
-  sunlight_min: null,
-  stress_source: [],
-  recovery_walk: null, recovery_stretch: null,
-  recovery_spacing: null, recovery_reading: null,
-  digital_stimulation: 3, overthinking: 3,
-  mental_browsing: null, tension: 3,
-  digestion: 3,
-  digestion_chest: null,
-  digestion_esophagus: null,
-  digestion_yesterday: [],
-};
+function getInitialState() {
+  return {
+    // 기기
+    sleep_score: null, sleep_total_min: null, sleep_deep_min: null,
+    sleep_light_min: null, sleep_rem_min: null, sleep_awake_min: null,
+    hr_night_avg: null, hr_resting: null, hrv_night_avg: null,
+    body_battery_charged: null, body_battery_morning: null,
+    // 수동
+    weight_kg: null, waist_cm: null, steps: null,
+    bedtime: null, wake_time: null,
+    wake_feeling: 3, night_wakeup_count: null,
+    early_wakeup: null, hard_to_sleep_again: null, many_dreams: null,
+    condition_score: 5,
+    energy_feeling: null, focus_state: null, mood: null,
+    cycle_phase: null,
+    caffeine_time: null, caffeine_type: null, caffeine_cups: null,
+    dinner_time: null, hunger_before_bed: null,
+    late_night_snack: null, excess_water: null,
+    exercise_min: null, exercise_type: [], exercise_intensity: null,
+    sunlight_min: null,
+    stress_source: [],
+    recovery_walk: null, recovery_stretch: null,
+    recovery_spacing: null, recovery_reading: null,
+    digital_stimulation: 3, overthinking: 3,
+    mental_browsing: null, tension: 3,
+    digestion: 3,
+    digestion_chest: null,
+    digestion_esophagus: null,
+    digestion_yesterday: [],
+  };
+}
+const state = getInitialState();
 
 let imageBase64 = null;
 let currentTab = 'morning';
@@ -1435,6 +1438,39 @@ async function loadDateData(dateStr) {
   switchTab('morning');
 }
 
+function resetUI() {
+  // 숫자·시간 input 초기화
+  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
+    inp.value = '';
+  });
+  // 슬라이더 초기값 복원
+  const sliderDefaults = {
+    wake_feeling: ['wfv', 3],
+    condition_score: ['csv', 5],
+    digital_stimulation: ['dsv', 3],
+    overthinking: ['otv', 3],
+    tension: ['tnv', 3],
+  };
+  Object.entries(sliderDefaults).forEach(([id, [valId, def]]) => {
+    const el = document.getElementById(id);
+    if (el) { el.value = def; document.getElementById(valId).textContent = def; }
+  });
+  // 버튼 선택 상태 초기화
+  document.querySelectorAll('.btn-opt.selected, .multi-btn.selected').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.yn-btn.y-selected, .yn-btn.n-selected').forEach(el => {
+    el.classList.remove('y-selected', 'n-selected');
+  });
+  // 수면 총합 표시 초기화
+  const disp = document.getElementById('sleep_total_display');
+  if (disp) disp.textContent = '--';
+  // 이미지 초기화
+  const preview = document.querySelector('.preview-img');
+  const analyzeBtn = document.querySelector('.analyze-btn');
+  if (preview) { preview.style.display = 'none'; preview.src = ''; }
+  if (analyzeBtn) analyzeBtn.style.display = 'none';
+  imageBase64 = null;
+}
+
 async function loadToday() {
   const today = getToday();
   try {
@@ -1609,8 +1645,14 @@ async function saveAll() {
     showToast('✓ ' + savedDate + ' 저장');
     editingDate = null;
     updateEditingBanner();
-    // 오늘 탭으로 돌아온 경우 오늘 데이터 다시 로드
+    // 이전 날짜 저장 후: state 초기화 → 오늘 데이터 로드
     if (savedDate !== getToday()) {
+      // state 전체 초기화
+      const fresh = getInitialState();
+      Object.keys(state).forEach(k => { state[k] = fresh[k]; });
+      // UI 초기화
+      resetUI();
+      // 오늘 데이터 있으면 불러오기
       await loadToday();
     }
   } catch(e) {
