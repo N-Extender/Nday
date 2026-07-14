@@ -60,17 +60,17 @@ body {
   z-index: 100;
 }
 .header-left h1 {
-  font-size: 1.2rem;
-  font-weight: 400;
-  letter-spacing: .12em;
+  font-size: 1.1rem;
+  font-weight: 300;
+  letter-spacing: .15em;
   color: var(--text);
 }
 .header-left .date {
   font-family: 'DM Mono', monospace;
-  font-size: .72rem;
+  font-size: .65rem;
   color: var(--muted);
-  margin-top: 3px;
-  letter-spacing: .06em;
+  margin-top: 2px;
+  letter-spacing: .08em;
 }
 .save-btn {
   font-family: 'DM Mono', monospace;
@@ -261,7 +261,7 @@ body {
   gap: 6px;
 }
 .btn-opt {
-  padding: 8px 15px;
+  padding: 7px 14px;
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 20px;
@@ -283,7 +283,7 @@ body {
 .yn-group { display: flex; gap: 6px; }
 .yn-btn {
   flex: 1;
-  padding: 10px;
+  padding: 9px;
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 4px;
@@ -426,10 +426,10 @@ body {
 }
 .stat-card .s-label {
   font-family: 'DM Mono', monospace;
-  font-size: .68rem;
+  font-size: .58rem;
   color: var(--muted);
   margin-bottom: 4px;
-  letter-spacing: .06em;
+  letter-spacing: .08em;
 }
 .stat-card .s-val {
   font-family: 'DM Mono', monospace;
@@ -1117,32 +1117,32 @@ const CLAUDE_API   = 'https://api.anthropic.com/v1/messages';
 // ── STATE ──
 function getInitialState() {
   return {
-    // 기기
-    sleep_score: null, sleep_total_min: null, sleep_deep_min: null,
-    sleep_light_min: null, sleep_rem_min: null, sleep_awake_min: null,
-    hr_night_avg: null, hr_resting: null, hrv_night_avg: null,
-    body_battery_charged: null, body_battery_morning: null,
-    // 수동
-    weight_kg: null, waist_cm: null, steps: null,
-    bedtime: null, wake_time: null,
-    wake_feeling: 3, night_wakeup_count: null,
-    early_wakeup: null, hard_to_sleep_again: null, many_dreams: null,
-    condition_score: 5,
-    energy_feeling: null, focus_state: null, mood: null,
-    cycle_phase: null,
-    caffeine_time: null, caffeine_type: null, caffeine_cups: null,
-    dinner_time: null, hunger_before_bed: null,
-    late_night_snack: null, excess_water: null,
-    exercise_min: null, exercise_type: [], exercise_intensity: null,
-    sunlight_min: null,
-    stress_source: [],
-    recovery_walk: null, recovery_stretch: null,
-    recovery_spacing: null, recovery_reading: null,
-    digital_stimulation: 3, overthinking: 3,
-    mental_browsing: null, tension: 3,
-    digestion: 3,
-    digestion_chest: null,
-    digestion_esophagus: null,
+  // 기기
+  sleep_score: null, sleep_total_min: null, sleep_deep_min: null,
+  sleep_light_min: null, sleep_rem_min: null, sleep_awake_min: null,
+  hr_night_avg: null, hr_resting: null, hrv_night_avg: null,
+  body_battery_charged: null, body_battery_morning: null,
+  // 수동
+  weight_kg: null, waist_cm: null, steps: null,
+  bedtime: null, wake_time: null,
+  wake_feeling: 3, night_wakeup_count: null,
+  early_wakeup: null, hard_to_sleep_again: null, many_dreams: null,
+  condition_score: 5,
+  energy_feeling: null, focus_state: null, mood: null,
+  cycle_phase: null,
+  caffeine_time: null, caffeine_type: null, caffeine_cups: null,
+  dinner_time: null, hunger_before_bed: null,
+  late_night_snack: null, excess_water: null,
+  exercise_min: null, exercise_type: [], exercise_intensity: null,
+  sunlight_min: null,
+  stress_source: [],
+  recovery_walk: null, recovery_stretch: null,
+  recovery_spacing: null, recovery_reading: null,
+  digital_stimulation: 3, overthinking: 3,
+  mental_browsing: null, tension: 3,
+  digestion: 3,
+  digestion_chest: null,
+  digestion_esophagus: null,
     digestion_yesterday: [],
   };
 }
@@ -1439,35 +1439,21 @@ async function loadDateData(dateStr) {
 }
 
 function resetUI() {
-  // 숫자·시간 input 초기화
-  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
-    inp.value = '';
-  });
-  // 슬라이더 초기값 복원
+  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => { inp.value = ''; });
   const sliderDefaults = {
-    wake_feeling: ['wfv', 3],
-    condition_score: ['csv', 5],
-    digital_stimulation: ['dsv', 3],
-    overthinking: ['otv', 3],
-    tension: ['tnv', 3],
+    wake_feeling: ['wfv', 3], condition_score: ['csv', 5],
+    digital_stimulation: ['dsv', 3], overthinking: ['otv', 3], tension: ['tnv', 3],
   };
   Object.entries(sliderDefaults).forEach(([id, [valId, def]]) => {
     const el = document.getElementById(id);
     if (el) { el.value = def; document.getElementById(valId).textContent = def; }
   });
-  // 버튼 선택 상태 초기화
   document.querySelectorAll('.btn-opt.selected, .multi-btn.selected').forEach(el => el.classList.remove('selected'));
   document.querySelectorAll('.yn-btn.y-selected, .yn-btn.n-selected').forEach(el => {
     el.classList.remove('y-selected', 'n-selected');
   });
-  // 수면 총합 표시 초기화
   const disp = document.getElementById('sleep_total_display');
   if (disp) disp.textContent = '--';
-  // 이미지 초기화
-  const preview = document.querySelector('.preview-img');
-  const analyzeBtn = document.querySelector('.analyze-btn');
-  if (preview) { preview.style.display = 'none'; preview.src = ''; }
-  if (analyzeBtn) analyzeBtn.style.display = 'none';
   imageBase64 = null;
 }
 
@@ -1645,14 +1631,11 @@ async function saveAll() {
     showToast('✓ ' + savedDate + ' 저장');
     editingDate = null;
     updateEditingBanner();
-    // 이전 날짜 저장 후: state 초기화 → 오늘 데이터 로드
     if (savedDate !== getToday()) {
       // state 전체 초기화
       const fresh = getInitialState();
       Object.keys(state).forEach(k => { state[k] = fresh[k]; });
-      // UI 초기화
       resetUI();
-      // 오늘 데이터 있으면 불러오기
       await loadToday();
     }
   } catch(e) {
@@ -2140,18 +2123,14 @@ async function exportWeeklyMD() {
     const today = getToday();
     const d7 = new Date();
     d7.setDate(d7.getDate() - 6);
-    const weekStart = `${d7.getFullYear()}-${String(d7.getMonth()+1).padStart(2,'0')}-${String(d7.getDate()).padStart(2,'0')}`;
+    const weekStart = d7.getFullYear() + '-' + String(d7.getMonth()+1).padStart(2,'0') + '-' + String(d7.getDate()).padStart(2,'0');
 
-    const data = await supaFetch(`/daily_log?date=gte.${weekStart}&date=lte.${today}&select=*&order=date.asc`);
+    const data = await supaFetch('/daily_log?date=gte.' + weekStart + '&date=lte.' + today + '&select=*&order=date.asc');
     if (!data.length) { showToast('최근 7일 데이터가 없습니다'); return; }
 
-    const minToHM = (min) => {
-      if (!min) return '--';
-      return `${Math.floor(min/60)}h ${min%60}분`;
-    };
-    const yn = (v) => v ? 'Y' : 'N';
+    const minToHM = (min) => min ? Math.floor(min/60) + 'h ' + (min%60) + '분' : '--';
+    const yn = (v) => v === true ? 'Y' : v === false ? 'N' : '--';
 
-    // 각 날짜별로 개별 .md 파일 다운로드 (순차적으로 약간의 딜레이)
     for (let i = 0; i < data.length; i++) {
       const d = data[i];
       const md = `---
@@ -2167,61 +2146,53 @@ tags: daily-log
 - 총 수면:: ${minToHM(d.sleep_total_min)}
 - 수면 점수:: ${d.sleep_score || '--'}
 - 기상 체감:: ${d.wake_feeling || '--'}/5
-
-## 수면 질
-- 중간 각성 횟수:: ${d.night_wakeup_count ?? '--'}
-- 새벽 각성 여부:: ${yn(d.early_wakeup)}
-- 다시 잠들기 어려움:: ${yn(d.hard_to_sleep_again)}
+- 중간 각성:: ${d.night_wakeup_count ?? '--'}회
+- 새벽 각성:: ${yn(d.early_wakeup)}
 - 꿈 많음:: ${yn(d.many_dreams)}
 
 ## Garmin
 - HRV:: ${d.hrv_night_avg || '--'} ms
-- 안정시 심박(RHR):: ${d.hr_resting || '--'} bpm
-- 밤사이 평균 심박:: ${d.hr_night_avg || '--'} bpm
+- RHR:: ${d.hr_resting || '--'} bpm
 - Body Battery 충전:: +${d.body_battery_charged || '--'}
 - Body Battery 아침:: ${d.body_battery_morning || '--'}
 
 ## 아침 컨디션
-- 컨디션 점수:: ${d.condition_score || '--'}/10
-- 에너지 느낌:: ${d.energy_feeling || '--'}
-- 집중 상태:: ${d.focus_state || '--'}
-- 감정 상태:: ${d.mood || '--'}
-
-## 신체 지표
-- 몸무게:: ${d.weight_kg || '--'} kg
-- 허리둘레:: ${d.waist_cm || '--'} cm
+- 컨디션:: ${d.condition_score || '--'}/10
+- 에너지:: ${d.energy_feeling || '--'}
+- 집중:: ${d.focus_state || '--'}
+- 감정:: ${d.mood || '--'}
 - 생리주기:: ${d.cycle_phase || '--'}
+
+## 신체
+- 몸무게:: ${d.weight_kg || '--'} kg
+- 허리:: ${d.waist_cm || '--'} cm
 
 ---
 
 # ☀️ Day Log
 
 ## 카페인
-- 마지막 시간:: ${d.caffeine_time || '--'}
 - 종류:: ${d.caffeine_type || '--'}
 - 잔 수:: ${d.caffeine_cups || '--'}
+- 마지막 시간:: ${d.caffeine_time || '--'}
 
 ## 식사
-- 저녁 식사 시간:: ${d.dinner_time || '--'}
-- 취침 전 공복감:: ${d.hunger_before_bed || '--'}
+- 저녁:: ${d.dinner_time || '--'}
 - 야식:: ${yn(d.late_night_snack)}
 - 수분 과다:: ${yn(d.excess_water)}
 
 ## 운동
-- 운동 시간:: ${d.exercise_min || '--'} 분
-- 운동 종류:: ${Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'}
-- 운동 강도:: ${d.exercise_intensity || '--'}
+- 종류:: ${Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'}
+- 시간:: ${d.exercise_min || '--'}분
+- 강도:: ${d.exercise_intensity || '--'}
 - 걸음 수:: ${d.steps || '--'}
-- 햇빛 노출:: ${d.sunlight_min || '--'} 분
+- 햇빛:: ${d.sunlight_min || '--'}분
 
 ---
 
 # 🧠 Stress / Recovery
 
-## 스트레스 요인
-- ${d.stress_source?.join(', ') || '없음'}
-
-## 회복 활동
+- 스트레스:: ${d.stress_source?.join(', ') || '없음'}
 - 산책:: ${yn(d.recovery_walk)}
 - 스트레칭:: ${yn(d.recovery_stretch)}
 - 멍때리기:: ${yn(d.recovery_spacing)}
@@ -2244,11 +2215,9 @@ tags: daily-log
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
-      // 브라우저가 다운로드를 차단하지 않도록 짧은 딜레이
       await new Promise(r => setTimeout(r, 300));
     }
-
-    showToast(`✓ ${data.length}개 .md 파일 다운로드 완료`);
+    showToast('✓ ' + data.length + '개 .md 파일 다운로드 완료');
   } catch(e) { showToast('내보내기 실패: ' + e.message); console.error(e); }
 }
 
