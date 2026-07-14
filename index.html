@@ -1937,7 +1937,7 @@ tags: daily-log
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = d.date + '-daily-log.md';
+    a.download = d.date + '.md';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -2129,7 +2129,7 @@ tags: daily-log
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${d.date}-daily-log.md`;
+    a.download = `${d.date}.md`;
     a.click();
     showToast('✓ .md 파일 다운로드');
   } catch(e) { showToast('내보내기 실패'); console.error(e); }
@@ -2239,7 +2239,7 @@ tags: daily-log
       const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `${d.date}-daily-log.md`;
+      a.download = `${d.date}.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
