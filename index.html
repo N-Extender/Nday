@@ -47,6 +47,8 @@ body {
   padding-bottom: 80px;
 }
 
+
+
 /* ── HEADER ── */
 .header {
   display: flex;
@@ -145,7 +147,7 @@ body {
 }
 
 /* ── FIELD ── */
-.field { margin-bottom: 14px; }
+.field { margin-bottom: 14px; min-width: 0; }
 .field-label {
   font-size: .78rem;
   color: var(--muted);
@@ -173,6 +175,7 @@ body {
 }
 .num-input input {
   flex: 1;
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 4px;
@@ -205,6 +208,7 @@ body {
   outline: none;
   transition: border-color .2s;
   width: 100%;
+  min-width: 0;
   -webkit-appearance: none;
 }
 .time-input input:focus { border-color: var(--text); }
@@ -594,7 +598,7 @@ body {
 
 <div class="header">
   <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.2.3</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.2.4</span></h1>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <button onclick="shiftDay(-1)" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -818,11 +822,13 @@ body {
         <div>
           <div class="field-label" style="margin-bottom:7px">전날</div>
           <div class="btn-group" style="--opt-color:var(--stress)">
-            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="커피" onclick="toggleMulti('digestion_yesterday','커피',this)">☕ 커피</button>
+            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="오후커피" onclick="toggleMulti('digestion_yesterday','오후커피',this)">☕ 오후커피</button>
             <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="늦은식사" onclick="toggleMulti('digestion_yesterday','늦은식사',this)">🌙 늦은식사</button>
-            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="과식" onclick="toggleMulti('digestion_yesterday','과식',this)">🍟 과식</button>
+            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="달달" onclick="toggleMulti('digestion_yesterday','달달',this)">🍬 달달</button>
+            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="당폭발" onclick="toggleMulti('digestion_yesterday','당폭발',this)">🍭 당폭발</button>
             <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="음주" onclick="toggleMulti('digestion_yesterday','음주',this)">🍺 음주</button>
-            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="괜찮았음" onclick="toggleMulti('digestion_yesterday','괜찮았음',this)">👍 괜찮았음</button>
+            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="과식" onclick="toggleMulti('digestion_yesterday','과식',this)">🍟 과식</button>
+            <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="클린식" onclick="toggleMulti('digestion_yesterday','클린식',this)">👍 클린식</button>
           </div>
         </div>
 
@@ -1225,11 +1231,19 @@ function updateSlider(id, valId) {
   document.getElementById(valId).textContent = state[id];
 }
 function setSingle(key, val, btn) {
-  state[key] = val;
   const grp = btn.closest('.btn-group') || btn.parentElement;
+  if (btn.classList.contains('selected')) {
+    state[key] = null;
+    btn.classList.remove('selected');
+    btn.removeAttribute('data-selected-key');
+    btn.removeAttribute('data-selected-val');
+    return;
+  }
+  state[key] = val;
   grp.querySelectorAll('.btn-opt').forEach(b => {
     b.classList.remove('selected');
     b.removeAttribute('data-selected-key');
+    b.removeAttribute('data-selected-val');
   });
   btn.classList.add('selected');
   btn.setAttribute('data-selected-key', key);
@@ -1632,7 +1646,6 @@ async function saveAll() {
     editingDate = null;
     updateEditingBanner();
     if (savedDate !== getToday()) {
-      // state 전체 초기화
       const fresh = getInitialState();
       Object.keys(state).forEach(k => { state[k] = fresh[k]; });
       resetUI();
@@ -2124,93 +2137,93 @@ async function exportWeeklyMD() {
     const d7 = new Date();
     d7.setDate(d7.getDate() - 6);
     const weekStart = d7.getFullYear() + '-' + String(d7.getMonth()+1).padStart(2,'0') + '-' + String(d7.getDate()).padStart(2,'0');
-
     const data = await supaFetch('/daily_log?date=gte.' + weekStart + '&date=lte.' + today + '&select=*&order=date.asc');
     if (!data.length) { showToast('최근 7일 데이터가 없습니다'); return; }
-
     const minToHM = (min) => min ? Math.floor(min/60) + 'h ' + (min%60) + '분' : '--';
     const yn = (v) => v === true ? 'Y' : v === false ? 'N' : '--';
-
     for (let i = 0; i < data.length; i++) {
       const d = data[i];
-      const md = `---
-date: ${d.date}
-tags: daily-log
----
-
-# 🌅 Morning Check
-
-## 수면
-- 취침 시간:: ${d.bedtime || '--'}
-- 기상 시간:: ${d.wake_time || '--'}
-- 총 수면:: ${minToHM(d.sleep_total_min)}
-- 수면 점수:: ${d.sleep_score || '--'}
-- 기상 체감:: ${d.wake_feeling || '--'}/5
-- 중간 각성:: ${d.night_wakeup_count ?? '--'}회
-- 새벽 각성:: ${yn(d.early_wakeup)}
-- 꿈 많음:: ${yn(d.many_dreams)}
-
-## Garmin
-- HRV:: ${d.hrv_night_avg || '--'} ms
-- RHR:: ${d.hr_resting || '--'} bpm
-- Body Battery 충전:: +${d.body_battery_charged || '--'}
-- Body Battery 아침:: ${d.body_battery_morning || '--'}
-
-## 아침 컨디션
-- 컨디션:: ${d.condition_score || '--'}/10
-- 에너지:: ${d.energy_feeling || '--'}
-- 집중:: ${d.focus_state || '--'}
-- 감정:: ${d.mood || '--'}
-- 생리주기:: ${d.cycle_phase || '--'}
-
-## 신체
-- 몸무게:: ${d.weight_kg || '--'} kg
-- 허리:: ${d.waist_cm || '--'} cm
-
----
-
-# ☀️ Day Log
-
-## 카페인
-- 종류:: ${d.caffeine_type || '--'}
-- 잔 수:: ${d.caffeine_cups || '--'}
-- 마지막 시간:: ${d.caffeine_time || '--'}
-
-## 식사
-- 저녁:: ${d.dinner_time || '--'}
-- 야식:: ${yn(d.late_night_snack)}
-- 수분 과다:: ${yn(d.excess_water)}
-
-## 운동
-- 종류:: ${Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'}
-- 시간:: ${d.exercise_min || '--'}분
-- 강도:: ${d.exercise_intensity || '--'}
-- 걸음 수:: ${d.steps || '--'}
-- 햇빛:: ${d.sunlight_min || '--'}분
-
----
-
-# 🧠 Stress / Recovery
-
-- 스트레스:: ${d.stress_source?.join(', ') || '없음'}
-- 산책:: ${yn(d.recovery_walk)}
-- 스트레칭:: ${yn(d.recovery_stretch)}
-- 멍때리기:: ${yn(d.recovery_spacing)}
-- 독서:: ${yn(d.recovery_reading)}
-
----
-
-# 🌙 Night Check
-
-- 디지털 자극:: ${d.digital_stimulation || '--'}/5
-- 생각 많음:: ${d.overthinking || '--'}/5
-- 긴장감:: ${d.tension || '--'}/5
-- 머리 쓰는 검색:: ${yn(d.mental_browsing)}
-`;
+      const lines = [
+        '---',
+        'date: ' + d.date,
+        'tags: daily-log',
+        '---',
+        '',
+        '# 🌅 Morning Check',
+        '',
+        '## 수면',
+        '- 취침:: ' + (d.bedtime || '--'),
+        '- 기상:: ' + (d.wake_time || '--'),
+        '- 총 수면:: ' + minToHM(d.sleep_total_min),
+        '- 수면 점수:: ' + (d.sleep_score || '--'),
+        '- 기상 체감:: ' + (d.wake_feeling || '--') + '/5',
+        '- 중간 각성:: ' + (d.night_wakeup_count ?? '--') + '회',
+        '- 새벽 각성:: ' + yn(d.early_wakeup),
+        '- 꿈 많음:: ' + yn(d.many_dreams),
+        '',
+        '## Garmin',
+        '- HRV:: ' + (d.hrv_night_avg || '--') + ' ms',
+        '- RHR:: ' + (d.hr_resting || '--') + ' bpm',
+        '- Body Battery 충전:: +' + (d.body_battery_charged || '--'),
+        '- Body Battery 아침:: ' + (d.body_battery_morning || '--'),
+        '',
+        '## 아침 컨디션',
+        '- 컨디션:: ' + (d.condition_score || '--') + '/10',
+        '- 에너지:: ' + (d.energy_feeling || '--'),
+        '- 집중:: ' + (d.focus_state || '--'),
+        '- 감정:: ' + (d.mood || '--'),
+        '- 생리주기:: ' + (d.cycle_phase || '--'),
+        '',
+        '## 신체',
+        '- 몸무게:: ' + (d.weight_kg || '--') + ' kg',
+        '- 허리:: ' + (d.waist_cm || '--') + ' cm',
+        '',
+        '---',
+        '',
+        '# ☀️ Day Log',
+        '',
+        '## 카페인',
+        '- 종류:: ' + (d.caffeine_type || '--'),
+        '- 잔 수:: ' + (d.caffeine_cups || '--'),
+        '- 마지막 시간:: ' + (d.caffeine_time || '--'),
+        '',
+        '## 식사',
+        '- 저녁:: ' + (d.dinner_time || '--'),
+        '- 야식:: ' + yn(d.late_night_snack),
+        '- 수분 과다:: ' + yn(d.excess_water),
+        '- 전날 음식:: ' + (d.digestion_yesterday ? d.digestion_yesterday.join(', ') : '--'),
+        '',
+        '## 운동',
+        '- 종류:: ' + (Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'),
+        '- 시간:: ' + (d.exercise_min || '--') + '분',
+        '- 강도:: ' + (d.exercise_intensity || '--'),
+        '- 걸음 수:: ' + (d.steps || '--'),
+        '- 햇빛:: ' + (d.sunlight_min || '--') + '분',
+        '',
+        '---',
+        '',
+        '# 🧠 Stress / Recovery',
+        '',
+        '- 스트레스:: ' + (d.stress_source && d.stress_source.length ? d.stress_source.join(', ') : '없음'),
+        '- 산책:: ' + yn(d.recovery_walk),
+        '- 스트레칭:: ' + yn(d.recovery_stretch),
+        '- 멍때리기:: ' + yn(d.recovery_spacing),
+        '- 독서:: ' + yn(d.recovery_reading),
+        '',
+        '---',
+        '',
+        '# 🌙 Night Check',
+        '',
+        '- 디지털 자극:: ' + (d.digital_stimulation || '--') + '/5',
+        '- 생각 많음:: ' + (d.overthinking || '--') + '/5',
+        '- 긴장감:: ' + (d.tension || '--') + '/5',
+        '- 머리 쓰는 검색:: ' + yn(d.mental_browsing),
+      ];
+      const md = lines.join('\n');
       const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `${d.date}.md`;
+      a.download = d.date + '.md';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -2220,6 +2233,7 @@ tags: daily-log
     showToast('✓ ' + data.length + '개 .md 파일 다운로드 완료');
   } catch(e) { showToast('내보내기 실패: ' + e.message); console.error(e); }
 }
+
 
 async function exportCSV() {
   try {
