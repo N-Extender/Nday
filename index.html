@@ -373,7 +373,8 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
       <div class="ck-circle"></div><div class="ck-label">집안일 10분</div>
     </div>
     <div class="ck-task" data-life="tomorrow">
-      <div class="ck-circle"></div><div class="ck-label">내일 준비 (옷, 도시락)</div>
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">내일 준비</div><div class="ck-sub" style="padding-left:0">옷, 도시락</div></div>
     </div>
     <div class="ck-task" data-life="budget">
       <div class="ck-circle"></div><div class="ck-label">가계부 기록</div>
@@ -381,6 +382,18 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
     <div class="ck-task" data-life="steps">
       <div class="ck-circle"></div>
       <div style="flex:1"><div class="ck-label">걸음수</div><div class="ck-sub" style="padding-left:0">손목닥터, 토스, 카뱅, 캐시워크, 머니워크, 당근</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><div class="dot" style="--sc:var(--life)"></div>🎬 Key Scene</div>
+    <div class="field">
+      <div class="field-label">Plan</div>
+      <textarea class="text-input" id="key_scene_plan" placeholder="오늘의 장면을 미리 그려보세요..." rows="3"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-label">Captured</div>
+      <textarea class="text-input" id="key_scene_captured" placeholder="실제로 일어난 장면..." rows="3"></textarea>
     </div>
   </div>
 </div>
@@ -440,6 +453,7 @@ function freshState() {
     english_output_yn:null, english_output_note:null,
     life_morning:null, life_todo:null, life_duolingo:null,
     life_clean:null, life_tomorrow:null, life_budget:null, life_steps:null,
+    key_scene_plan:null, key_scene_captured:null,
   };
 }
 let S = freshState();
@@ -630,7 +644,7 @@ function applyData(d) {
     if (inp.id in S && S[inp.id] !== null) inp.value = S[inp.id];
   });
   // textareas
-  ['reading_note','english_note','productivity_note','note_created_note','english_output_note'].forEach(function(id) {
+  ['reading_note','english_note','productivity_note','note_created_note','english_output_note','key_scene_plan','key_scene_captured'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el && S[id]) el.value = S[id];
   });
@@ -744,7 +758,7 @@ function buildMD(d) {
   var mh = function(min) { return min ? Math.floor(min/60)+'h '+(min%60)+'분' : '--'; };
   var ck = function(v) { return v ? '[x]' : '[ ]'; };
   return [
-    '---', 'date: '+d.date, 'tags: daily-log', '---', '',
+    '---', 'created: '+d.date, 'tags: daily-log', '---', '',
     '# Heath', '',
     '## 수면',
     '- 취침: '+(d.bedtime||'--'),
@@ -814,9 +828,20 @@ function buildMD(d) {
     '- '+ck(d.life_todo)+' 오늘 할일 작성',
     '- '+ck(d.life_duolingo)+' 듀오링고',
     '- '+ck(d.life_clean)+' 집안일 10분',
-    '- '+ck(d.life_tomorrow)+' 내일 준비 (옷, 도시락)',
+    '- '+ck(d.life_tomorrow)+' 내일 준비',
     '- '+ck(d.life_budget)+' 가계부 기록',
     '- '+ck(d.life_steps)+' 걸음수',
+    '',
+    '---', '',
+    '## 🎬 Key Scene (Plan)',
+    '',
+    '> '+(d.key_scene_plan||''),
+    '',
+    '---',
+    '',
+    '## 🎬 Key Scene (Captured)',
+    '',
+    '> '+(d.key_scene_captured||''),
   ].join('\n');
 }
 function dlMD(d) {
