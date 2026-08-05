@@ -2,1627 +2,981 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-title" content="N-day">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="N-day">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>N-day Log</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
-  --bg: #e4e0da;
-  --surface: #ede9e3;
-  --surface2: #f3f0eb;
-  --border: #ccc8c0;
-  --border2: #bab6ae;
-  --text: #1c1a17;
-  --muted: #6b6760;
-  --faint: #a8a49c;
-  --health:  #2e8840;
-  --morning: #9a7040;
-  --day:     #3d6e52;
-  --stress:  #5a4090;
-  --night:   #304860;
-  --joy:     #1e9080;
-  --career:  #2e6db4;
-  --life:    #7a5030;
+  --bg:#e4e0da; --surface:#ede9e3; --surface2:#f3f0eb;
+  --border:#ccc8c0; --border2:#bab6ae;
+  --text:#1c1a17; --muted:#6b6760; --faint:#a8a49c;
+  --health:#2e8840; --morning:#9a7040; --day:#3d6e52;
+  --stress:#5a4090; --night:#304860; --joy:#1e9080;
+  --career:#2e6db4; --life:#7a5030;
 }
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:80px; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+.header { display:flex; justify-content:space-between; align-items:center; padding:14px 16px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:100; }
+.header h1 { font-size:1.1rem; font-weight:300; letter-spacing:.12em; }
+.date { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); margin-top:3px; }
+.day-nav { display:flex; align-items:center; gap:8px; margin-top:2px; }
+.day-nav button { background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:0; line-height:1; }
+.save-btn { font-family:'DM Mono',monospace; font-size:.72rem; padding:7px 16px; background:var(--text); color:var(--bg); border:none; border-radius:3px; cursor:pointer; letter-spacing:.06em; }
+.save-btn:disabled { opacity:.4; }
 
-body {
-  font-family: 'Noto Serif KR', serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding-bottom: 80px;
-}
+.panel { display:none; padding:16px; }
+.panel.active { display:block; }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 100;
-}
-.header-left h1 {
-  font-size: 1.1rem;
-  font-weight: 300;
-  letter-spacing: .12em;
-  color: var(--text);
-}
-.header-left .date {
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem;
-  color: var(--muted);
-  margin-top: 3px;
-  letter-spacing: .06em;
-}
-.save-btn {
-  font-family: 'DM Mono', monospace;
-  font-size: .72rem;
-  padding: 7px 16px;
-  background: var(--text);
-  color: var(--bg);
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  letter-spacing: .06em;
-  font-weight: 500;
-  transition: opacity .2s;
-}
-.save-btn:disabled { opacity: .4; cursor: not-allowed; }
+.section { margin-bottom:22px; }
+.section-title { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--text); letter-spacing:.14em; text-transform:uppercase; margin-bottom:14px; padding-bottom:7px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--sc,var(--muted)); flex-shrink:0; }
 
-/* PANELS */
-.panel { display: none; padding: 16px; }
-.panel.active { display: block; }
+.field { margin-bottom:14px; min-width:0; }
+.field-label { font-size:.76rem; color:var(--muted); margin-bottom:7px; }
 
-/* SECTION */
-.section { margin-bottom: 24px; }
-.section-title {
-  font-family: 'DM Mono', monospace;
-  font-size: .72rem;
-  color: var(--text);
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.section-title .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--section-color, var(--muted));
-  flex-shrink: 0;
-}
-.subsection-title {
-  font-family: 'DM Mono', monospace;
-  font-size: .68rem;
-  color: var(--muted);
-  letter-spacing: .1em;
-  margin: 16px 0 10px;
-  padding-bottom: 4px;
-  border-bottom: 1px dashed var(--border);
-}
+.num-input { display:flex; align-items:center; gap:8px; }
+.num-input input { flex:1; min-width:0; background:var(--surface); border:1px solid var(--border2); border-radius:4px; color:var(--text); font-family:'DM Mono',monospace; font-size:.9rem; padding:9px 10px; outline:none; text-align:center; width:100%; }
+.num-input input:focus { border-color:var(--text); }
+.num-input input::placeholder { color:var(--faint); font-size:.78rem; }
+.num-unit { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); white-space:nowrap; flex-shrink:0; }
 
-/* FIELD */
-.field { margin-bottom: 14px; min-width: 0; }
-.field-label {
-  font-size: .78rem;
-  color: var(--muted);
-  margin-bottom: 7px;
-  letter-spacing: .03em;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
+.time-input input { background:var(--surface); border:1px solid var(--border2); border-radius:4px; color:var(--text); font-family:'DM Mono',monospace; font-size:.9rem; padding:9px 10px; outline:none; width:100%; -webkit-appearance:none; }
+.time-input input:focus { border-color:var(--text); }
 
-/* NUMBER INPUT */
-.num-input { display: flex; align-items: center; gap: 8px; }
-.num-input input {
-  flex: 1; min-width: 0;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: .9rem;
-  padding: 9px 10px;
-  outline: none;
-  transition: border-color .2s;
-  text-align: center;
-}
-.num-input input:focus { border-color: var(--text); }
-.num-input input::placeholder { color: var(--faint); font-size: .78rem; }
-.num-unit {
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem;
-  color: var(--muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+.text-input { background:var(--surface); border:1px solid var(--border2); border-radius:4px; color:var(--text); font-family:'Noto Serif KR',serif; font-size:.82rem; padding:9px 12px; outline:none; width:100%; resize:none; }
+.text-input:focus { border-color:var(--text); }
+.text-input::placeholder { color:var(--faint); }
 
-/* TIME INPUT */
-.time-input input {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: .9rem;
-  padding: 9px 10px;
-  outline: none;
-  transition: border-color .2s;
-  width: 100%; min-width: 0;
-  -webkit-appearance: none;
-}
-.time-input input:focus { border-color: var(--text); }
+.slider-wrap { padding:4px 0; }
+.slider-row { display:flex; align-items:center; gap:10px; }
+.slider-row input[type=range] { flex:1; height:3px; -webkit-appearance:none; background:var(--border2); border-radius:2px; outline:none; cursor:pointer; }
+.slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--sc2,var(--text)); cursor:pointer; border:2px solid var(--bg); }
+.slider-val { font-family:'DM Mono',monospace; font-size:.85rem; color:var(--sc2,var(--text)); width:24px; text-align:right; flex-shrink:0; }
+.slider-marks { display:flex; justify-content:space-between; margin-top:4px; }
+.slider-marks span { font-family:'DM Mono',monospace; font-size:.62rem; color:var(--muted); }
 
-/* TEXT INPUT */
-.text-input {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  color: var(--text);
-  font-family: 'Noto Serif KR', serif;
-  font-size: .82rem;
-  padding: 9px 12px;
-  outline: none;
-  transition: border-color .2s;
-  width: 100%; min-width: 0;
-  resize: none;
-}
-.text-input:focus { border-color: var(--text); }
-.text-input::placeholder { color: var(--faint); }
+.btn-group { display:flex; flex-wrap:wrap; gap:6px; }
+.btn-opt { padding:7px 14px; background:var(--surface); border:1px solid var(--border2); border-radius:20px; color:var(--muted); font-family:'Noto Serif KR',serif; font-size:.8rem; cursor:pointer; transition:all .15s; white-space:nowrap; -webkit-user-select:none; user-select:none; }
+.btn-opt.selected { background:var(--oc,var(--text)); border-color:var(--oc,var(--text)); color:var(--bg); }
 
-/* SLIDER */
-.slider-wrap { padding: 4px 0; }
-.slider-row { display: flex; align-items: center; gap: 10px; }
-.slider-row input[type=range] {
-  flex: 1; height: 3px;
-  -webkit-appearance: none;
-  background: var(--border2);
-  border-radius: 2px; outline: none; cursor: pointer;
-}
-.slider-row input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--slider-color, var(--text));
-  cursor: pointer;
-  border: 2px solid var(--bg);
-  box-shadow: 0 0 0 1px var(--slider-color, var(--text));
-}
-.slider-val {
-  font-family: 'DM Mono', monospace;
-  font-size: .85rem;
-  color: var(--slider-color, var(--text));
-  width: 24px; text-align: right; flex-shrink: 0;
-}
-.slider-marks {
-  display: flex; justify-content: space-between;
-  margin-top: 4px; padding: 0 2px;
-}
-.slider-marks span {
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem; color: var(--muted);
-}
+.yn-group { display:flex; gap:6px; }
+.yn-btn { flex:1; padding:10px; background:var(--surface); border:1px solid var(--border2); border-radius:4px; color:var(--muted); font-family:'DM Mono',monospace; font-size:.88rem; cursor:pointer; transition:all .15s; text-align:center; -webkit-user-select:none; user-select:none; }
+.yn-btn.y-on { background:rgba(46,136,64,.12); border-color:var(--health); color:var(--health); }
+.yn-btn.n-on { background:rgba(192,96,96,.1); border-color:#c06060; color:#c06060; }
 
-/* BUTTONS */
-.btn-group { display: flex; flex-wrap: wrap; gap: 6px; }
-.btn-opt {
-  padding: 7px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  color: var(--muted);
-  font-family: 'Noto Serif KR', serif;
-  font-size: .8rem;
-  cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.btn-opt.selected {
-  background: var(--opt-color, var(--text));
-  border-color: var(--opt-color, var(--text));
-  color: var(--bg);
-}
-.btn-opt:active { opacity: .7; }
+.ck-task { display:flex; align-items:flex-start; gap:10px; padding:11px 14px; background:var(--surface); border:1px solid var(--border2); border-radius:6px; margin-bottom:8px; cursor:pointer; -webkit-user-select:none; user-select:none; transition:all .15s; flex-wrap:wrap; }
+.ck-task.done { background:rgba(46,136,64,.08); border-color:var(--health); }
+.ck-circle { width:20px; height:20px; border-radius:50%; border:2px solid var(--border2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.75rem; transition:all .15s; margin-top:1px; }
+.ck-task.done .ck-circle { background:var(--health); border-color:var(--health); color:#fff; }
+.ck-label { font-size:.85rem; color:var(--muted); transition:color .15s; flex:1; }
+.ck-task.done .ck-label { color:var(--health); }
+.ck-sub { font-size:.65rem; color:var(--faint); margin-top:3px; padding-left:30px; width:100%; }
 
-/* YN BUTTONS */
-.yn-group { display: flex; gap: 6px; }
-.yn-btn {
-  flex: 1; padding: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  font-size: .88rem;
-  cursor: pointer;
-  transition: all .15s;
-  text-align: center;
-}
-.yn-btn.y-selected { background: rgba(46,136,64,.12); border-color: var(--health); color: var(--health); }
-.yn-btn.n-selected { background: rgba(192,96,96,.1); border-color: #c06060; color: #c06060; }
-.yn-btn:active { opacity: .7; }
+.toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--surface2); border:1px solid var(--border2); border-radius:4px; padding:10px 20px; font-family:'DM Mono',monospace; font-size:.72rem; color:var(--health); z-index:999; opacity:0; transition:opacity .3s; white-space:nowrap; pointer-events:none; }
+.toast.show { opacity:1; }
 
-/* LIFE TASK */
-.life-task {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all .15s;
-}
-.life-task:active { opacity: .7; }
-.life-task.done {
-  background: rgba(46,136,64,.08);
-  border-color: var(--health);
-}
-.life-task-check {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  border: 2px solid var(--border2);
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
-  font-size: .75rem;
-}
-.life-task.done .life-task-check {
-  background: var(--health);
-  border-color: var(--health);
-  color: white;
-}
-.life-task-label {
-  font-size: .85rem;
-  color: var(--muted);
-  transition: color .15s;
-}
-.life-task.done .life-task-label {
-  color: var(--health);
-}
-.life-task-note {
-  flex: 1;
-  font-family: 'DM Mono', monospace;
-  font-size: .75rem;
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--text);
-  text-align: right;
-}
-.life-task-note::placeholder { color: var(--faint); }
+.export-btn { width:100%; padding:11px; background:none; border:1px solid var(--border2); border-radius:4px; color:var(--muted); font-family:'DM Mono',monospace; font-size:.75rem; cursor:pointer; letter-spacing:.06em; margin-bottom:8px; display:block; }
 
-/* TOAST */
-.toast {
-  position: fixed;
-  bottom: 90px; left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  padding: 10px 20px;
-  font-family: 'DM Mono', monospace;
-  font-size: .72rem;
-  color: var(--health);
-  z-index: 999;
-  opacity: 0;
-  transition: opacity .3s;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.toast.show { opacity: 1; }
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; display:flex; background:var(--bg); border-top:1px solid var(--border); z-index:100; }
+.nav-btn { flex:1; padding:10px 2px 14px; text-align:center; cursor:pointer; background:none; border:none; font-family:'Noto Serif KR',serif; font-size:.62rem; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:3px; -webkit-user-select:none; user-select:none; }
+.nav-btn.active { color:var(--text); }
+.nav-icon { font-size:1.05rem; }
 
-/* EXPORT BUTTONS */
-.export-btn {
-  width: 100%; padding: 11px;
-  background: none;
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  font-size: .75rem;
-  cursor: pointer;
-  transition: all .2s;
-  letter-spacing: .06em;
-  margin-bottom: 8px;
-  display: block;
-}
-.export-btn:hover { border-color: var(--text); color: var(--text); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:12px; }
+.cal-dow { text-align:center; font-family:'DM Mono',monospace; font-size:.58rem; color:var(--muted); padding:4px 0; }
+.cal-cell { aspect-ratio:1; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; background:var(--surface); border:1px solid var(--border); gap:2px; }
+.cal-cell.empty { background:none; border-color:transparent; cursor:default; }
+.cal-cell.today { border-color:var(--joy); }
+.cal-cell.has-rec { background:var(--surface2); }
+.cal-num { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--text); }
+.cal-cell.empty .cal-num { color:transparent; }
+.cal-dot { width:5px; height:5px; border-radius:50%; }
+.dot-t { background:var(--health); }
+.dot-p { background:var(--muted); }
 
-/* BOTTOM NAV */
-.bottom-nav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  display: flex;
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  z-index: 100;
-}
-.nav-btn {
-  flex: 1; padding: 10px 2px 14px;
-  text-align: center;
-  cursor: pointer;
-  background: none; border: none;
-  font-family: 'Noto Serif KR', serif;
-  font-size: .62rem;
-  color: var(--muted);
-  transition: color .2s;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
-}
-.nav-btn.active { color: var(--text); }
-.nav-icon { font-size: 1.05rem; }
-
-/* CALENDAR */
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px; margin-bottom: 16px;
-}
-.cal-dow {
-  text-align: center;
-  font-family: 'DM Mono', monospace;
-  font-size: .58rem; color: var(--muted); padding: 4px 0;
-}
-.cal-cell {
-  aspect-ratio: 1;
-  border-radius: 5px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  transition: all .15s;
-  position: relative; gap: 2px;
-}
-.cal-cell:active { opacity: .7; }
-.cal-cell.empty { background: none; border-color: transparent; cursor: default; }
-.cal-cell.today { border-color: var(--joy); }
-.cal-cell .cal-num {
-  font-family: 'DM Mono', monospace;
-  font-size: .7rem; color: var(--text); line-height: 1;
-}
-.cal-cell.empty .cal-num { color: transparent; }
-.cal-cell .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
-.cal-dot.dot-today  { background: var(--health); }
-.cal-dot.dot-past   { background: var(--muted); }
-.cal-dot.dot-none   { background: transparent; }
-.cal-cell.has-record { background: var(--surface2); }
-
-/* HISTORY CARD */
-.journal-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 10px;
-  overflow: hidden;
-}
-.jc-header {
-  display: flex; justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-}
-.jc-date {
-  font-family: 'DM Mono', monospace;
-  font-size: .72rem; color: var(--text);
-}
-.jc-score {
-  font-family: 'DM Mono', monospace;
-  font-size: .68rem; color: var(--morning);
-}
-.jc-toggle {
-  font-size: .75rem; color: var(--muted);
-  transition: transform .2s;
-  margin-left: 6px;
-}
-.jc-header.open .jc-toggle { transform: rotate(180deg); }
-.jc-body {
-  display: none;
-  padding: 10px 12px 12px;
-}
-.jc-body.open { display: block; }
-.tag {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 10px;
-  font-size: .68rem;
-  background: rgba(0,0,0,.06);
-  color: var(--tag-color, var(--muted));
-  border: 1px solid currentColor;
-}
-
-/* IMAGE UPLOAD */
-.upload-zone {
-  border: 1px dashed var(--border2);
-  border-radius: 6px; padding: 16px;
-  text-align: center; cursor: pointer;
-  background: var(--surface); position: relative;
-}
-.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-zone .upload-icon { font-size: 1.4rem; margin-bottom: 4px; }
-.upload-zone .upload-text { font-size: .72rem; color: var(--muted); }
-.preview-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
-.analyze-btn {
-  width: 100%; margin-top: 10px; padding: 9px;
-  background: var(--surface2); border: 1px solid var(--border2);
-  border-radius: 4px; color: var(--text);
-  font-family: 'DM Mono', monospace; font-size: .75rem;
-  cursor: pointer; display: none;
-}
-.analyze-status {
-  font-family: 'DM Mono', monospace; font-size: .65rem;
-  text-align: center; margin-top: 6px; min-height: 16px; color: var(--muted);
-}
-.analyze-status.ok { color: var(--health); }
-.analyze-status.err { color: #c06060; }
-.extracted-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; display: none;
-}
-.extracted-item {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 9px;
-}
-.extracted-item .ex-label { font-family: 'DM Mono',monospace; font-size: .55rem; color: var(--muted); margin-bottom: 2px; }
-.extracted-item .ex-val { font-family: 'DM Mono',monospace; font-size: .82rem; color: var(--health); }
-
-.divider { height: 1px; background: var(--border); margin: 16px 0; }
-.empty-msg { font-size: .75rem; color: var(--muted); text-align: center; padding: 24px 0; line-height: 1.8; }
-.review-title {
-  font-family: 'DM Mono', monospace; font-size: .7rem;
-  color: var(--text); letter-spacing: .14em; text-transform: uppercase;
-  margin-bottom: 12px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
-}
+.jcard { background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:10px; overflow:hidden; }
+.jcard-hdr { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; cursor:pointer; }
+.jcard-date { font-family:'DM Mono',monospace; font-size:.72rem; }
+.jcard-score { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--morning); }
+.jcard-arrow { font-size:.75rem; color:var(--muted); transition:transform .2s; }
+.jcard-hdr.open .jcard-arrow { transform:rotate(180deg); }
+.jcard-body { display:none; padding:10px 12px 12px; border-top:1px solid var(--border); }
+.jcard-body.open { display:block; }
+.tag { display:inline-block; padding:3px 8px; border-radius:10px; font-size:.68rem; background:rgba(0,0,0,.06); color:var(--tc,var(--muted)); border:1px solid currentColor; }
+.divider { height:1px; background:var(--border); margin:16px 0; }
+.sec-label { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--text); letter-spacing:.14em; text-transform:uppercase; margin-bottom:12px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+.empty-msg { font-size:.75rem; color:var(--muted); text-align:center; padding:24px 0; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-left">
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.08em;vertical-align:middle">v1.3.0</span></h1>
-    <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
-      <button onclick="shiftDay(-1)" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">‹</button>
+  <div>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.0</span></h1>
+    <div class="day-nav">
+      <button id="btnPrevDay">‹</button>
       <div class="date" id="dateLabel">—</div>
-      <button onclick="shiftDay(1)" id="nextDayBtn" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:0;line-height:1">›</button>
+      <button id="btnNextDay">›</button>
     </div>
   </div>
-  <button class="save-btn" onclick="saveAll()" id="saveBtn">저장</button>
+  <button class="save-btn" id="btnSave">저장</button>
 </div>
 
-<!-- ===== HEATH (Morning + Day 통합) ===== -->
+<!-- HEATH -->
 <div class="panel active" id="panel-heath">
 
-  <!-- 수면 -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--morning)">
-      <div class="dot"></div>💤 수면
-    </div>
-    <div class="field">
-      <div class="field-label">취침 시간</div>
-      <div class="time-input"><input type="time" id="bedtime" onchange="calcSleepTotal()"></div>
-    </div>
-    <div class="field">
-      <div class="field-label">기상 시간</div>
-      <div class="time-input"><input type="time" id="wake_time" onchange="calcSleepTotal()"></div>
-    </div>
+    <div class="section-title"><div class="dot" style="--sc:var(--morning)"></div>💤 수면</div>
+    <div class="field"><div class="field-label">취침 시간</div><div class="time-input"><input type="time" id="bedtime"></div></div>
+    <div class="field"><div class="field-label">기상 시간</div><div class="time-input"><input type="time" id="wake_time"></div></div>
     <div class="field">
       <div class="field-label">총 수면 <span id="sleep_total_display" style="font-family:'DM Mono',monospace;color:var(--health);margin-left:6px;font-size:.75rem"></span></div>
-      <div class="num-input">
-        <input type="number" id="sleep_total_min" placeholder="자동 계산" readonly style="opacity:.6;cursor:default">
-        <span class="num-unit">분</span>
-      </div>
+      <div class="num-input"><input type="number" id="sleep_total_min" placeholder="자동 계산" readonly style="opacity:.6"><span class="num-unit">분</span></div>
     </div>
-    <div class="field">
-      <div class="field-label">중간 각성 횟수</div>
-      <div class="num-input"><input type="number" id="night_wakeup_count" placeholder="0" min="0"><span class="num-unit">회</span></div>
-    </div>
-
+    <div class="field"><div class="field-label">수면 점수</div><div class="num-input"><input type="number" id="sleep_score" placeholder="0~100"><span class="num-unit">점</span></div></div>
+    <div class="field"><div class="field-label">중간 각성 횟수</div><div class="num-input"><input type="number" id="night_wakeup_count" placeholder="0" min="0"><span class="num-unit">회</span></div></div>
     <div class="field">
       <div class="field-label">새벽 각성</div>
-      <div class="yn-group">
-        <button class="yn-btn" onclick="setYN('early_wakeup','Y',this)">Y</button>
-        <button class="yn-btn" onclick="setYN('early_wakeup','N',this)">N</button>
+      <div class="yn-group" data-yn="early_wakeup">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
       </div>
     </div>
     <div class="field">
-      <div class="field-label">다시 잠들기</div>
-      <div class="yn-group">
-        <button class="yn-btn" onclick="setYN('hard_to_sleep_again','Y',this)">Y</button>
-        <button class="yn-btn" onclick="setYN('hard_to_sleep_again','N',this)">N</button>
+      <div class="field-label">다시 잠들기 어려움</div>
+      <div class="yn-group" data-yn="hard_to_sleep_again">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">꿈 많음</div>
-      <div class="yn-group">
-        <button class="yn-btn" onclick="setYN('many_dreams','Y',this)">Y</button>
-        <button class="yn-btn" onclick="setYN('many_dreams','N',this)">N</button>
+      <div class="yn-group" data-yn="many_dreams">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">기상 체감</div>
       <div class="slider-wrap">
-        <div class="slider-row" style="--slider-color:var(--morning)">
-          <input type="range" min="1" max="5" value="3" id="wake_feeling" oninput="updateSlider('wake_feeling','wfv')">
+        <div class="slider-row" style="--sc2:var(--morning)">
+          <input type="range" min="1" max="5" value="3" id="wake_feeling">
           <span class="slider-val" id="wfv">3</span>
         </div>
         <div class="slider-marks"><span>😴 1</span><span>3</span><span>5 😊</span></div>
       </div>
     </div>
-  </div>
-
-  <!-- GARMIN -->
-  <div class="section">
-    <div class="section-title" style="--section-color:var(--health)">
-      <div class="dot"></div>⌚ Garmin
-    </div>
     <div class="field">
-      <div class="field-label">Body Battery 아침</div>
-      <div class="num-input"><input type="number" id="body_battery_morning" placeholder="72"><span class="num-unit"></span></div>
-    </div>
-    <div class="field">
-      <div class="field-label">Body Battery 충전량</div>
-      <div class="num-input"><input type="number" id="body_battery_charged" placeholder="+44"><span class="num-unit"></span></div>
-    </div>
-    <div class="field">
-      <div class="field-label">수면 점수</div>
-      <div class="num-input"><input type="number" id="sleep_score" placeholder="0~100" min="0" max="100"><span class="num-unit">점</span></div>
-    </div>
-    <div class="field">
-      <div class="field-label">안정시 심박 (RHR)</div>
-      <div class="num-input"><input type="number" id="hr_resting" placeholder="49"><span class="num-unit">bpm</span></div>
-    </div>
-    <div class="field">
-      <div class="field-label">심박변이도 (HRV)</div>
-      <div class="num-input"><input type="number" id="hrv_night_avg" placeholder="51"><span class="num-unit">ms</span></div>
-    </div>
-  </div>
-
-  <!-- 신체 지표 -->
-  <div class="section">
-    <div class="section-title" style="--section-color:var(--day)">
-      <div class="dot"></div>📊 신체 지표
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field">
-        <div class="field-label">몸무게</div>
-        <div class="num-input"><input type="number" id="weight_kg" placeholder="56.0" step="0.1"><span class="num-unit">kg</span></div>
-      </div>
-      <div class="field">
-        <div class="field-label">허리둘레</div>
-        <div class="num-input"><input type="number" id="waist_cm" placeholder="67.0" step="0.1"><span class="num-unit">cm</span></div>
+      <div class="field-label">컨디션 점수</div>
+      <div class="slider-wrap">
+        <div class="slider-row" style="--sc2:var(--morning)">
+          <input type="range" min="1" max="10" value="5" id="condition_score">
+          <span class="slider-val" id="csv">5</span>
+        </div>
+        <div class="slider-marks"><span>1</span><span>5</span><span>10</span></div>
       </div>
     </div>
   </div>
 
-  <!-- 카페인 -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--day)">
-      <div class="dot"></div>☕ 카페인
-    </div>
+    <div class="section-title"><div class="dot" style="--sc:var(--health)"></div>⌚ Garmin</div>
+    <div class="field"><div class="field-label">Body Battery 아침</div><div class="num-input"><input type="number" id="body_battery_morning" placeholder="72"><span class="num-unit"></span></div></div>
+    <div class="field"><div class="field-label">Body Battery 충전량</div><div class="num-input"><input type="number" id="body_battery_charged" placeholder="+44"><span class="num-unit"></span></div></div>
+    <div class="field"><div class="field-label">안정시 심박 (RHR)</div><div class="num-input"><input type="number" id="hr_resting" placeholder="49"><span class="num-unit">bpm</span></div></div>
+    <div class="field"><div class="field-label">심박변이도 (HRV)</div><div class="num-input"><input type="number" id="hrv_night_avg" placeholder="51"><span class="num-unit">ms</span></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>📊 신체 지표</div>
+    <div class="field"><div class="field-label">몸무게</div><div class="num-input"><input type="number" id="weight_kg" placeholder="56.0" step="0.1"><span class="num-unit">kg</span></div></div>
+    <div class="field"><div class="field-label">허리둘레</div><div class="num-input"><input type="number" id="waist_cm" placeholder="67.0" step="0.1"><span class="num-unit">cm</span></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>☕ 카페인</div>
     <div class="field">
       <div class="field-label">오후 카페인</div>
-      <div class="yn-group">
-        <button class="yn-btn" onclick="setYN('caffeine_yn','Y',this)">Y</button>
-        <button class="yn-btn" onclick="setYN('caffeine_yn','N',this)">N</button>
+      <div class="yn-group" data-yn="caffeine_yn">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field">
-        <div class="field-label">마지막 시간</div>
-        <div class="time-input"><input type="time" id="caffeine_time"></div>
-      </div>
-      <div class="field">
-        <div class="field-label">잔 수</div>
-        <div class="num-input"><input type="number" id="caffeine_cups" placeholder="1" step="0.5" min="0"><span class="num-unit">잔</span></div>
-      </div>
-    </div>
+    <div class="field"><div class="field-label">마지막 시간</div><div class="time-input"><input type="time" id="caffeine_time"></div></div>
+    <div class="field"><div class="field-label">잔 수</div><div class="num-input"><input type="number" id="caffeine_cups" placeholder="1" step="0.5" min="0"><span class="num-unit">잔</span></div></div>
   </div>
 
-  <!-- 식사 -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--day)">
-      <div class="dot"></div>🍽 식사
-    </div>
-    <div class="field">
-      <div class="field-label">저녁 식사 시간</div>
-      <div class="time-input"><input type="time" id="dinner_time"></div>
-    </div>
-    <div class="field">
-      <div class="field-label">물 섭취량</div>
-      <div class="num-input"><input type="number" id="water_ml" placeholder="0" min="0" step="100"><span class="num-unit">ml</span></div>
-    </div>
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍽 식사</div>
+    <div class="field"><div class="field-label">저녁 식사 시간</div><div class="time-input"><input type="time" id="dinner_time"></div></div>
+    <div class="field"><div class="field-label">물 섭취량</div><div class="num-input"><input type="number" id="water_ml" placeholder="0" min="0" step="100"><span class="num-unit">ml</span></div></div>
     <div class="field">
       <div class="field-label">취침 전 공복감</div>
-      <div class="btn-group" style="--opt-color:var(--day)">
-        <button class="btn-opt" data-key="hunger_before_bed" data-val="낮음" onclick="setSingle('hunger_before_bed','낮음',this)">낮음</button>
-        <button class="btn-opt" data-key="hunger_before_bed" data-val="보통" onclick="setSingle('hunger_before_bed','보통',this)">보통</button>
-        <button class="btn-opt" data-key="hunger_before_bed" data-val="높음" onclick="setSingle('hunger_before_bed','높음',this)">높음</button>
+      <div class="btn-group" style="--oc:var(--day)">
+        <button class="btn-opt" data-key="hunger_before_bed" data-val="낮음">낮음</button>
+        <button class="btn-opt" data-key="hunger_before_bed" data-val="보통">보통</button>
+        <button class="btn-opt" data-key="hunger_before_bed" data-val="높음">높음</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field">
-        <div class="field-label">야식</div>
-        <div class="yn-group">
-          <button class="yn-btn" onclick="setYN('late_night_snack','Y',this)">Y</button>
-          <button class="yn-btn" onclick="setYN('late_night_snack','N',this)">N</button>
-        </div>
+    <div class="field">
+      <div class="field-label">야식</div>
+      <div class="yn-group" data-yn="late_night_snack">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
       </div>
-      <div class="field">
-        <div class="field-label">가공식품</div>
-        <div class="yn-group">
-          <button class="yn-btn" onclick="setYN('processed_food','Y',this)">Y</button>
-          <button class="yn-btn" onclick="setYN('processed_food','N',this)">N</button>
-        </div>
+    </div>
+    <div class="field">
+      <div class="field-label">가공식품</div>
+      <div class="yn-group" data-yn="processed_food">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">전날 음식 영향</div>
-      <div class="btn-group" style="--opt-color:var(--day)">
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="오후커피" onclick="toggleMulti('digestion_yesterday','오후커피',this)">☕ 오후커피</button>
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="늦은식사" onclick="toggleMulti('digestion_yesterday','늦은식사',this)">🌙 늦은식사</button>
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="달달" onclick="toggleMulti('digestion_yesterday','달달',this)">🍬 달달</button>
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="당폭발" onclick="toggleMulti('digestion_yesterday','당폭발',this)">🍭 당폭발</button>
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="음주" onclick="toggleMulti('digestion_yesterday','음주',this)">🍺 음주</button>
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="과식" onclick="toggleMulti('digestion_yesterday','과식',this)">🍟 과식</button>
-        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="클린식" onclick="toggleMulti('digestion_yesterday','클린식',this)">👍 클린식</button>
+      <div class="btn-group" style="--oc:var(--day)">
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="오후커피">☕ 오후커피</button>
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="늦은식사">🌙 늦은식사</button>
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="달달">🍬 달달</button>
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="당폭발">🍭 당폭발</button>
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="음주">🍺 음주</button>
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="과식">🍟 과식</button>
+        <button class="btn-opt" data-mkey="digestion_yesterday" data-mval="클린식">👍 클린식</button>
       </div>
     </div>
   </div>
 
-  <!-- 운동 -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--day)">
-      <div class="dot"></div>🏃 운동 / 활동
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🏃 운동 / 활동</div>
+    <div class="ck-task" data-ck="exercise_yn">
+      <div class="ck-circle"></div><div class="ck-label">운동</div>
     </div>
-    <div class="life-task" id="ck-task-exercise_yn" onclick="toggleCheck('exercise_yn')">
-      <div class="life-task-check" id="ck-check-exercise_yn"></div>
-      <div class="life-task-label">운동</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field">
-        <div class="field-label">운동 시간</div>
-        <div class="num-input"><input type="number" id="exercise_min" placeholder="0" min="0"><span class="num-unit">분</span></div>
-      </div>
-      <div class="field">
-        <div class="field-label">햇빛 노출</div>
-        <div class="num-input"><input type="number" id="sunlight_min" placeholder="0" min="0"><span class="num-unit">분</span></div>
-      </div>
-    </div>
+    <div class="field" style="margin-top:8px"><div class="field-label">운동 시간</div><div class="num-input"><input type="number" id="exercise_min" placeholder="0" min="0"><span class="num-unit">분</span></div></div>
+    <div class="field"><div class="field-label">햇빛 노출</div><div class="num-input"><input type="number" id="sunlight_min" placeholder="0" min="0"><span class="num-unit">분</span></div></div>
     <div class="field">
       <div class="field-label">운동 종류</div>
-      <div class="btn-group" style="--opt-color:var(--day)">
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="필라테스" onclick="toggleMulti('exercise_type','필라테스',this)">필라테스</button>
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="러닝" onclick="toggleMulti('exercise_type','러닝',this)">러닝</button>
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="걷기" onclick="toggleMulti('exercise_type','걷기',this)">걷기</button>
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="수영" onclick="toggleMulti('exercise_type','수영',this)">수영</button>
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="요가" onclick="toggleMulti('exercise_type','요가',this)">요가</button>
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="휴식" onclick="toggleMulti('exercise_type','휴식',this)">휴식</button>
-        <button class="btn-opt" data-mkey="exercise_type" data-mval="기타" onclick="toggleMulti('exercise_type','기타',this)">기타</button>
+      <div class="btn-group" style="--oc:var(--day)">
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="필라테스">필라테스</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="러닝">러닝</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="걷기">걷기</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="수영">수영</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="요가">요가</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="휴식">휴식</button>
+        <button class="btn-opt" data-mkey="exercise_type" data-mval="기타">기타</button>
       </div>
     </div>
     <div class="field">
       <div class="field-label">운동 강도</div>
-      <div class="btn-group" style="--opt-color:var(--day)">
-        <button class="btn-opt" data-key="exercise_intensity" data-val="가벼움" onclick="setSingle('exercise_intensity','가벼움',this)">가벼움</button>
-        <button class="btn-opt" data-key="exercise_intensity" data-val="보통" onclick="setSingle('exercise_intensity','보통',this)">보통</button>
-        <button class="btn-opt" data-key="exercise_intensity" data-val="강함" onclick="setSingle('exercise_intensity','강함',this)">강함</button>
+      <div class="btn-group" style="--oc:var(--day)">
+        <button class="btn-opt" data-key="exercise_intensity" data-val="가벼움">가벼움</button>
+        <button class="btn-opt" data-key="exercise_intensity" data-val="보통">보통</button>
+        <button class="btn-opt" data-key="exercise_intensity" data-val="강함">강함</button>
       </div>
     </div>
-    <div class="life-task" id="ck-task-recovery_stretch" onclick="toggleCheck('recovery_stretch')">
-      <div class="life-task-check" id="ck-check-recovery_stretch"></div>
-      <div class="life-task-label">스트레칭</div>
+    <div class="ck-task" data-ck="recovery_stretch">
+      <div class="ck-circle"></div><div class="ck-label">스트레칭</div>
     </div>
-    <div class="life-task" id="ck-task-recovery_walk" onclick="toggleCheck('recovery_walk')">
-      <div class="life-task-check" id="ck-check-recovery_walk"></div>
-      <div class="life-task-label">산책</div>
+    <div class="ck-task" data-ck="recovery_walk">
+      <div class="ck-circle"></div><div class="ck-label">산책</div>
     </div>
-    <div class="field">
-      <div class="field-label">걸음 수</div>
-      <div class="num-input"><input type="number" id="steps" placeholder="0" min="0"><span class="num-unit">보</span></div>
-    </div>
+    <div class="field" style="margin-top:8px"><div class="field-label">걸음 수</div><div class="num-input"><input type="number" id="steps" placeholder="0" min="0"><span class="num-unit">보</span></div></div>
   </div>
 
-  <!-- 생리주기 -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--morning)">
-      <div class="dot"></div>🌸 생리주기
-    </div>
-    <div class="field">
-      <div class="btn-group" style="--opt-color:var(--morning);flex-direction:column;">
-        <button class="btn-opt" data-key="cycle_phase" data-val="생리기(1~5일)" onclick="setSingle('cycle_phase','생리기(1~5일)',this)" style="border-radius:8px;text-align:left;padding:10px 16px">🔴 생리기 (1~5일) <small style="font-size:.68rem;opacity:.7;margin-left:8px">에너지 낮음, 휴식 집중</small></button>
-        <button class="btn-opt" data-key="cycle_phase" data-val="난포기(6~13일)" onclick="setSingle('cycle_phase','난포기(6~13일)',this)" style="border-radius:8px;text-align:left;padding:10px 16px">🟡 난포기 (6~13일) <small style="font-size:.68rem;opacity:.7;margin-left:8px">에너지 상승, 학습 도전</small></button>
-        <button class="btn-opt" data-key="cycle_phase" data-val="배란기(14~16일)" onclick="setSingle('cycle_phase','배란기(14~16일)',this)" style="border-radius:8px;text-align:left;padding:10px 16px">🟢 배란기 (14~16일) <small style="font-size:.68rem;opacity:.7;margin-left:8px">에너지 피크, 사회·관계 활발</small></button>
-        <button class="btn-opt" data-key="cycle_phase" data-val="황체기(17~28일)" onclick="setSingle('cycle_phase','황체기(17~28일)',this)" style="border-radius:8px;text-align:left;padding:10px 16px">🟠 황체기 (17~28일) <small style="font-size:.68rem;opacity:.7;margin-left:8px">에너지 변동, PMS 주의</small></button>
-      </div>
+    <div class="section-title"><div class="dot" style="--sc:var(--morning)"></div>🌸 생리주기</div>
+    <div class="btn-group" style="--oc:var(--morning);flex-direction:column">
+      <button class="btn-opt" data-key="cycle_phase" data-val="생리기(1~5일)" style="text-align:left;border-radius:8px;padding:10px 16px">🔴 생리기 (1~5일) <small style="font-size:.68rem;opacity:.7;margin-left:6px">에너지 낮음, 휴식 집중</small></button>
+      <button class="btn-opt" data-key="cycle_phase" data-val="난포기(6~13일)" style="text-align:left;border-radius:8px;padding:10px 16px">🟡 난포기 (6~13일) <small style="font-size:.68rem;opacity:.7;margin-left:6px">에너지 상승, 학습 도전</small></button>
+      <button class="btn-opt" data-key="cycle_phase" data-val="배란기(14~16일)" style="text-align:left;border-radius:8px;padding:10px 16px">🟢 배란기 (14~16일) <small style="font-size:.68rem;opacity:.7;margin-left:6px">에너지 피크, 사회·관계 활발</small></button>
+      <button class="btn-opt" data-key="cycle_phase" data-val="황체기(17~28일)" style="text-align:left;border-radius:8px;padding:10px 16px">🟠 황체기 (17~28일) <small style="font-size:.68rem;opacity:.7;margin-left:6px">에너지 변동, PMS 주의</small></button>
     </div>
   </div>
 
 </div>
 
-<!-- ===== EXTEND (Night) ===== -->
+<!-- EXTEND -->
 <div class="panel" id="panel-extend">
 
-  <!-- 스트레스 -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--stress)">
-      <div class="dot"></div>🧠 스트레스 요인
-    </div>
-    <div class="field">
-      <div class="btn-group" style="--opt-color:var(--stress)">
-        <button class="btn-opt" data-mkey="stress_source" data-mval="업무" onclick="toggleMulti('stress_source','업무',this)">업무</button>
-        <button class="btn-opt" data-mkey="stress_source" data-mval="인간관계" onclick="toggleMulti('stress_source','인간관계',this)">인간관계</button>
-        <button class="btn-opt" data-mkey="stress_source" data-mval="미래 고민" onclick="toggleMulti('stress_source','미래 고민',this)">미래 고민</button>
-        <button class="btn-opt" data-mkey="stress_source" data-mval="재정" onclick="toggleMulti('stress_source','재정',this)">재정</button>
-        <button class="btn-opt" data-mkey="stress_source" data-mval="건강" onclick="toggleMulti('stress_source','건강',this)">건강</button>
-        <button class="btn-opt" data-mkey="stress_source" data-mval="기타" onclick="toggleMulti('stress_source','기타',this)">기타</button>
-        <button class="btn-opt" data-mkey="stress_source" data-mval="없음" onclick="toggleMulti('stress_source','없음',this)">없음</button>
-      </div>
+    <div class="section-title"><div class="dot" style="--sc:var(--stress)"></div>🧠 스트레스 요인</div>
+    <div class="btn-group" style="--oc:var(--stress)">
+      <button class="btn-opt" data-mkey="stress_source" data-mval="업무">업무</button>
+      <button class="btn-opt" data-mkey="stress_source" data-mval="인간관계">인간관계</button>
+      <button class="btn-opt" data-mkey="stress_source" data-mval="미래 고민">미래 고민</button>
+      <button class="btn-opt" data-mkey="stress_source" data-mval="재정">재정</button>
+      <button class="btn-opt" data-mkey="stress_source" data-mval="건강">건강</button>
+      <button class="btn-opt" data-mkey="stress_source" data-mval="기타">기타</button>
+      <button class="btn-opt" data-mkey="stress_source" data-mval="없음">없음</button>
     </div>
   </div>
 
-  <!-- INPUT -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--stress)">
-      <div class="dot"></div>📥 Input
+    <div class="section-title"><div class="dot" style="--sc:var(--stress)"></div>📥 Input</div>
+    <div class="ck-task" data-ck="recovery_reading">
+      <div class="ck-circle"></div><div class="ck-label">5분 독서</div>
     </div>
-    <div class="field">
-      <div class="life-task" id="ck-task-recovery_reading" onclick="toggleCheck('recovery_reading')" style="margin-bottom:8px">
-        <div class="life-task-check" id="ck-check-recovery_reading"></div>
-        <div class="life-task-label">독서</div>
-      </div>
-      <textarea class="text-input" id="reading_note" placeholder="읽은 내용, 메모..." rows="2" oninput="syncText('reading_note')"></textarea>
+    <textarea class="text-input" id="reading_note" placeholder="읽은 내용, 메모..." rows="2" style="margin-bottom:10px"></textarea>
+    <div class="ck-task" data-ck="english_yn">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">10분 영어</div><div class="ck-sub" style="padding-left:0">Opic 노잼</div></div>
     </div>
-    <div class="field">
-      <div class="life-task" id="ck-task-english_yn" onclick="toggleCheck('english_yn')" style="margin-bottom:8px">
-        <div class="life-task-check" id="ck-check-english_yn"></div>
-        <div class="life-task-label">영어</div>
-      </div>
-      <textarea class="text-input" id="english_note" placeholder="학습 내용..." rows="2" oninput="syncText('english_note')"></textarea>
+    <textarea class="text-input" id="english_note" placeholder="학습 내용..." rows="2" style="margin-bottom:10px"></textarea>
+    <div class="ck-task" data-ck="productivity_yn">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">10분 학습</div><div class="ck-sub" style="padding-left:0">옵시디언 강의</div></div>
     </div>
-    <div class="field">
-      <div class="life-task" id="ck-task-productivity_yn" onclick="toggleCheck('productivity_yn')" style="margin-bottom:8px">
-        <div class="life-task-check" id="ck-check-productivity_yn"></div>
-        <div class="life-task-label">생산성</div>
-      </div>
-      <textarea class="text-input" id="productivity_note" placeholder="한 일..." rows="2" oninput="syncText('productivity_note')"></textarea>
-    </div>
+    <textarea class="text-input" id="productivity_note" placeholder="한 일..." rows="2"></textarea>
   </div>
 
-  <!-- OUTPUT -->
   <div class="section">
-    <div class="section-title" style="--section-color:var(--night)">
-      <div class="dot"></div>📤 Output
+    <div class="section-title"><div class="dot" style="--sc:var(--night)"></div>📤 Output</div>
+    <div class="ck-task" data-ck="daily_note_yn">
+      <div class="ck-circle"></div><div class="ck-label">Daily Note</div>
     </div>
-    <div class="life-task" id="ck-task-daily_note_yn" onclick="toggleCheck('daily_note_yn')">
-      <div class="life-task-check" id="ck-check-daily_note_yn"></div>
-      <div class="life-task-label">Daily Note</div>
+    <div class="ck-task" data-ck="focus_1h_yn" style="align-items:center">
+      <div class="ck-circle"></div>
+      <div class="ck-label">1시간 집중</div>
+      <input type="number" id="focus_hours" placeholder="0" min="0" max="24" step="0.5"
+        style="width:52px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;padding:4px 6px;text-align:center;outline:none;margin-left:auto;flex-shrink:0">
+      <span style="font-size:.68rem;color:var(--muted);flex-shrink:0">시간</span>
     </div>
-    <div class="life-task" id="ck-task-focus_1h_yn" onclick="toggleCheck('focus_1h_yn')">
-      <div class="life-task-check" id="ck-check-focus_1h_yn"></div>
-      <div class="life-task-label">집중 1시간</div>
+    <div class="ck-task" data-ck="note_created_yn">
+      <div class="ck-circle"></div><div class="ck-label">기록하기</div>
     </div>
-    <div class="field">
-      <div class="life-task" id="ck-task-note_created_yn" onclick="toggleCheck('note_created_yn')" style="margin-bottom:8px">
-        <div class="life-task-check" id="ck-check-note_created_yn"></div>
-        <div class="life-task-label">노트 생성</div>
-      </div>
-      <textarea class="text-input" id="note_created_note" placeholder="생성한 노트..." rows="2" oninput="syncText('note_created_note')"></textarea>
+    <textarea class="text-input" id="note_created_note" placeholder="생성한 노트..." rows="2" style="margin-bottom:10px"></textarea>
+    <div class="ck-task" data-ck="english_output_yn">
+      <div class="ck-circle"></div><div class="ck-label">영어 작문</div>
     </div>
-    <div class="field">
-      <div class="life-task" id="ck-task-english_output_yn" onclick="toggleCheck('english_output_yn')" style="margin-bottom:8px">
-        <div class="life-task-check" id="ck-check-english_output_yn"></div>
-        <div class="life-task-label">영어 작문</div>
-      </div>
-      <textarea class="text-input" id="english_output_note" placeholder="작품 내용..." rows="2" oninput="syncText('english_output_note')"></textarea>
-    </div>
+    <textarea class="text-input" id="english_output_note" placeholder="작문 내용..." rows="2"></textarea>
   </div>
-
-
-
-
 
 </div>
 
-<!-- ===== LIFE ===== -->
+<!-- LIFE -->
 <div class="panel" id="panel-life">
   <div class="section">
-    <div class="section-title" style="--section-color:var(--life)">
-      <div class="dot"></div>🏠 오늘 루틴
+    <div class="section-title"><div class="dot" style="--sc:var(--life)"></div>🏠 오늘 루틴</div>
+    <div class="ck-task" data-life="morning">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">모닝루틴</div><div class="ck-sub" style="padding-left:0">커튼 → 양치 → 몸무게 → 소금물</div></div>
     </div>
-    <div class="life-task" id="life-task-morning" onclick="toggleLifeTask('morning')">
-      <div class="life-task-check" id="life-check-morning"></div>
-      <div class="life-task-label">커튼 → 양치 → 몸무게 → 소금물</div>
+    <div class="ck-task" data-life="todo">
+      <div class="ck-circle"></div><div class="ck-label">오늘 할일 작성</div>
     </div>
-    <div class="life-task" id="life-task-todo" onclick="toggleLifeTask('todo')">
-      <div class="life-task-check" id="life-check-todo"></div>
-      <div class="life-task-label">오늘 할일 작성</div>
+    <div class="ck-task" data-life="duolingo">
+      <div class="ck-circle"></div><div class="ck-label">듀오링고</div>
     </div>
-    <div class="life-task" id="life-task-duolingo" onclick="toggleLifeTask('duolingo')">
-      <div class="life-task-check" id="life-check-duolingo"></div>
-      <div class="life-task-label">듀오링고</div>
+    <div class="ck-task" data-life="clean">
+      <div class="ck-circle"></div><div class="ck-label">집안일 10분</div>
     </div>
-    <div class="life-task" id="life-task-clean" onclick="toggleLifeTask('clean')">
-      <div class="life-task-check" id="life-check-clean"></div>
-      <div class="life-task-label">집안일 10분</div>
+    <div class="ck-task" data-life="tomorrow">
+      <div class="ck-circle"></div><div class="ck-label">내일 준비 (옷, 도시락)</div>
     </div>
-    <div class="life-task" id="life-task-tomorrow" onclick="toggleLifeTask('tomorrow')">
-      <div class="life-task-check" id="life-check-tomorrow"></div>
-      <div class="life-task-label">내일 준비 (옷, 도시락)</div>
+    <div class="ck-task" data-life="budget">
+      <div class="ck-circle"></div><div class="ck-label">가계부 기록</div>
     </div>
-    <div class="life-task" id="life-task-budget" onclick="toggleLifeTask('budget')">
-      <div class="life-task-check" id="life-check-budget"></div>
-      <div class="life-task-label">가계부 기록</div>
-    </div>
-    <div class="life-task" id="life-task-steps" onclick="toggleLifeTask('steps')">
-      <div class="life-task-check" id="life-check-steps"></div>
-      <div class="life-task-label">걸음수 (손목닥터, 토스, 카뱅, 캐시워크, 머니워크, 당근)</div>
+    <div class="ck-task" data-life="steps">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">걸음수</div><div class="ck-sub" style="padding-left:0">손목닥터, 토스, 카뱅, 캐시워크, 머니워크, 당근</div></div>
     </div>
   </div>
 </div>
 
-<!-- ===== HISTORY ===== -->
+<!-- HISTORY -->
 <div class="panel" id="panel-history">
   <div style="display:flex;gap:6px;align-items:center;margin-bottom:16px">
-    <button onclick="shiftMonth(-1)" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">‹</button>
-    <input type="month" id="historyMonth" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:9px 12px;outline:none;text-align:center" onchange="renderHistory()">
-    <button onclick="shiftMonth(1)" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">›</button>
+    <button id="btnPrevMonth" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">‹</button>
+    <input type="month" id="historyMonth" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;padding:9px 12px;outline:none;text-align:center">
+    <button id="btnNextMonth" style="background:var(--surface);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-size:1rem;padding:8px 12px;cursor:pointer;flex-shrink:0">›</button>
   </div>
-  <div id="calendarGrid"></div>
-  <div id="historyList"></div>
-
+  <div id="calGrid"></div>
+  <div id="histList"></div>
   <div class="divider"></div>
-  <div class="review-title">내보내기</div>
-  <button class="export-btn" onclick="exportMD()">📄 오늘 .md 내보내기</button>
-  <button class="export-btn" onclick="exportWeeklyMD()">📅 주간 .md 내보내기 (최근 7일)</button>
-  <button class="export-btn" onclick="exportCSV()">📊 CSV 내보내기</button>
+  <div class="sec-label">내보내기</div>
+  <button class="export-btn" id="btnExportMD">📄 오늘 .md 내보내기</button>
+  <button class="export-btn" id="btnExportWeekly">📅 주간 .md 내보내기 (최근 7일)</button>
+  <button class="export-btn" id="btnExportCSV">📊 CSV 내보내기</button>
 </div>
 
-<!-- 하단 네비게이션 -->
 <div class="bottom-nav">
-  <button class="nav-btn active" id="nav-heath">
-    <span class="nav-icon">🌅</span>Heath
-  </button>
-  <button class="nav-btn" id="nav-extend">
-    <span class="nav-icon">🌙</span>Extend
-  </button>
-  <button class="nav-btn" id="nav-life">
-    <span class="nav-icon">🏠</span>Life
-  </button>
-  <button class="nav-btn" id="nav-history">
-    <span class="nav-icon">📅</span>기록
-  </button>
+  <button class="nav-btn active" id="nav-heath"><span class="nav-icon">🌅</span>Heath</button>
+  <button class="nav-btn" id="nav-extend"><span class="nav-icon">🌙</span>Extend</button>
+  <button class="nav-btn" id="nav-life"><span class="nav-icon">🏠</span>Life</button>
+  <button class="nav-btn" id="nav-history"><span class="nav-icon">📅</span>기록</button>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://ktzexhlgreppeporcdwb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_EqbNC8netAXOt62V56O-tQ_XpCi4sHq';
+const SURL = 'https://ktzexhlgreppeporcdwb.supabase.co';
+const SKEY = 'sb_publishable_EqbNC8netAXOt62V56O-tQ_XpCi4sHq';
 
-// ── STATE ──
-function getInitialState() {
+// STATE
+function freshState() {
   return {
-    sleep_score: null, sleep_total_min: null, sleep_deep_min: null,
-    sleep_light_min: null, sleep_rem_min: null, sleep_awake_min: null,
-    hr_night_avg: null, hr_resting: null, hrv_night_avg: null,
-    body_battery_charged: null, body_battery_morning: null,
-    weight_kg: null, waist_cm: null, steps: null,
-    bedtime: null, wake_time: null,
-    wake_feeling: 3, night_wakeup_count: null,
-    early_wakeup: null, hard_to_sleep_again: null, many_dreams: null,
-    condition_score: 5,
-    energy_feeling: null, focus_state: null, mood: null,
-    cycle_phase: null,
-    caffeine_yn: null, caffeine_time: null, caffeine_type: null, caffeine_cups: null,
-    dinner_time: null, hunger_before_bed: null, water_ml: null,
-    late_night_snack: null, processed_food: null,
-    exercise_yn: null, exercise_min: null, exercise_type: [], exercise_intensity: null,
-    sunlight_min: null,
-    recovery_stretch: null, recovery_walk: null, recovery_spacing: null,
-    stress_source: [],
-    recovery_reading: null, reading_note: null,
-    english_yn: null, english_note: null,
-    productivity_yn: null, productivity_note: null,
-    daily_note_yn: null, focus_1h_yn: null,
-    note_created_yn: null, note_created_note: null,
-    english_output_yn: null, english_output_note: null,
-    digital_stimulation: 3, overthinking: 3, tension: 3,
-    mental_browsing: null,
-    digestion_yesterday: [],
-    life_morning: null, life_todo: null, life_duolingo: null, life_clean: null, life_tomorrow: null, life_budget: null, life_steps: null,
+    sleep_score:null, sleep_total_min:null,
+    hr_resting:null, hrv_night_avg:null,
+    body_battery_charged:null, body_battery_morning:null,
+    weight_kg:null, waist_cm:null, steps:null,
+    bedtime:null, wake_time:null,
+    wake_feeling:3, night_wakeup_count:null,
+    early_wakeup:null, hard_to_sleep_again:null, many_dreams:null,
+    condition_score:5,
+    caffeine_yn:null, caffeine_time:null, caffeine_cups:null,
+    dinner_time:null, hunger_before_bed:null, water_ml:null,
+    late_night_snack:null, processed_food:null,
+    digestion_yesterday:[],
+    exercise_yn:null, exercise_min:null, exercise_type:[], exercise_intensity:null,
+    sunlight_min:null, recovery_stretch:null, recovery_walk:null,
+    cycle_phase:null,
+    stress_source:[],
+    recovery_reading:null, reading_note:null,
+    english_yn:null, english_note:null,
+    productivity_yn:null, productivity_note:null,
+    daily_note_yn:null, focus_1h_yn:null, focus_hours:null,
+    note_created_yn:null, note_created_note:null,
+    english_output_yn:null, english_output_note:null,
+    life_morning:null, life_todo:null, life_duolingo:null,
+    life_clean:null, life_tomorrow:null, life_budget:null, life_steps:null,
   };
 }
-const state = getInitialState();
-let imageBase64 = null;
-let currentTab = 'heath';
-let editingDate = null;
+let S = freshState();
+let editDate = null;
 
-// ── SLEEP CALC ──
-function calcSleepTotal() {
-  const bedEl = document.getElementById('bedtime');
-  const wakeEl = document.getElementById('wake_time');
-  const displayEl = document.getElementById('sleep_total_display');
-  const totalEl = document.getElementById('sleep_total_min');
-  if (!bedEl || !wakeEl || !bedEl.value || !wakeEl.value) return;
-  const [bh, bm] = bedEl.value.split(':').map(Number);
-  const [wh, wm] = wakeEl.value.split(':').map(Number);
-  let bedMins = bh * 60 + bm, wakeMins = wh * 60 + wm;
-  if (wakeMins <= bedMins) wakeMins += 24 * 60;
-  const total = wakeMins - bedMins;
-  state.sleep_total_min = total;
-  if (totalEl) totalEl.value = total;
-  const h = Math.floor(total / 60), m = total % 60;
-  if (displayEl) displayEl.textContent = h + '시간 ' + m + '분';
-}
-
-// ── DATE UTILS ──
-function getToday() {
+// UTILS
+function today() {
   const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
 }
-function formatDateKR(s) {
+function pad(n) { return String(n).padStart(2,'0'); }
+function fmtKR(s) {
   const [y,m,d] = s.split('-');
-  const days = ['일','월','화','수','목','금','토'];
-  return y + '년 ' + m + '월 ' + d + '일 (' + days[new Date(y,m-1,d).getDay()] + ')';
+  return y + '년 ' + m + '월 ' + d + '일 (' + ['일','월','화','수','목','금','토'][new Date(y,m-1,d).getDay()] + ')';
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+async function sfetch(path, opts) {
+  opts = opts || {};
+  const res = await fetch(SURL + '/rest/v1' + path, Object.assign({}, opts, {
+    headers: Object.assign({ 'apikey':SKEY, 'Authorization':'Bearer '+SKEY, 'Content-Type':'application/json', 'Prefer':'return=representation' }, opts.headers || {})
+  }));
+  if (!res.ok) throw new Error(await res.text());
+  return res.json().catch(function() { return null; });
 }
 
-function updateEditingBanner() {
-  const dateLabel = document.getElementById('dateLabel');
-  const nextBtn = document.getElementById('nextDayBtn');
-  const displayDate = editingDate || getToday();
-  if (dateLabel) dateLabel.textContent = formatDateKR(displayDate);
-  if (nextBtn) nextBtn.style.opacity = (displayDate >= getToday()) ? '0.2' : '1';
+// SLEEP CALC
+function calcSleep() {
+  var b = document.getElementById('bedtime').value;
+  var w = document.getElementById('wake_time').value;
+  if (!b || !w) return;
+  var bm = parseInt(b)*60 + parseInt(b.slice(3));
+  var wm = parseInt(w)*60 + parseInt(w.slice(3));
+  if (wm <= bm) wm += 1440;
+  var total = wm - bm;
+  S.sleep_total_min = total;
+  document.getElementById('sleep_total_min').value = total;
+  document.getElementById('sleep_total_display').textContent = Math.floor(total/60) + '시간 ' + (total%60) + '분';
 }
-updateEditingBanner();
-loadToday();
+document.getElementById('bedtime').addEventListener('change', calcSleep);
+document.getElementById('wake_time').addEventListener('change', calcSleep);
 
-// ── TABS ──
-function switchTab(id) {
-  const tabIds = ['heath','extend','life','history'];
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', tabIds[i]===id));
-  const panel = document.getElementById('panel-'+id);
-  if (panel) panel.classList.add('active');
-  if (id === 'history') renderHistory();
-  currentTab = id;
+// SLIDERS
+function initSlider(id, vid) {
+  var el = document.getElementById(id);
+  var vl = document.getElementById(vid);
+  el.addEventListener('input', function() { S[id] = parseInt(el.value); vl.textContent = el.value; });
 }
+initSlider('wake_feeling', 'wfv');
+initSlider('condition_score', 'csv');
 
-// ── HELPERS ──
-function updateSlider(id, valId) {
-  state[id] = parseInt(document.getElementById(id).value);
-  document.getElementById(valId).textContent = state[id];
-}
-function setSingle(key, val, btn) {
-  const grp = btn.closest('.btn-group') || btn.parentElement;
-  if (btn.classList.contains('selected')) {
-    state[key] = null;
-    btn.classList.remove('selected');
-    return;
-  }
-  state[key] = val;
-  grp.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-function setYN(key, val, btn) {
-  state[key] = val === 'Y';
-  const grp = btn.closest('.yn-group');
-  grp.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('y-selected','n-selected'));
-  btn.classList.add(val === 'Y' ? 'y-selected' : 'n-selected');
-}
-function toggleMulti(key, val, btn) {
-  btn.classList.toggle('selected');
-  if (!state[key]) state[key] = [];
-  if (btn.classList.contains('selected')) {
-    if (!state[key].includes(val)) state[key].push(val);
-  } else {
-    state[key] = state[key].filter(v => v !== val);
-  }
-}
-function syncText(id) {
-  state[id] = document.getElementById(id).value || null;
-}
-
-// ── LIFE TASKS ──
-function toggleCheck(key) {
-  state[key] = !state[key];
-  const task = document.getElementById('ck-task-' + key);
-  const check = document.getElementById('ck-check-' + key);
-  if (task) task.classList.toggle('done', !!state[key]);
-  if (check) check.textContent = state[key] ? '✓' : '';
-}
-
-function applyCheckboxes() {
-  const checkKeys = ['exercise_yn','recovery_stretch','recovery_walk',
-    'recovery_reading','english_yn','productivity_yn',
-    'daily_note_yn','focus_1h_yn','note_created_yn','english_output_yn'];
-  checkKeys.forEach(key => {
-    const task = document.getElementById('ck-task-' + key);
-    const check = document.getElementById('ck-check-' + key);
-    if (task && check) {
-      task.classList.toggle('done', !!state[key]);
-      check.textContent = state[key] ? '✓' : '';
-    }
+// NUMBER/TIME INPUTS
+document.querySelectorAll('input[type=number], input[type=time]').forEach(function(inp) {
+  if (inp.id === 'sleep_total_min' || inp.id === 'focus_hours') return;
+  inp.addEventListener('input', function() {
+    if (inp.id in S) S[inp.id] = inp.value !== '' ? (inp.type === 'number' ? parseFloat(inp.value) : inp.value) : null;
   });
-}
+});
+var fhEl = document.getElementById('focus_hours');
+if (fhEl) fhEl.addEventListener('input', function() { S.focus_hours = fhEl.value ? parseFloat(fhEl.value) : null; });
 
-function toggleLifeTask(id) {
-  const key = 'life_' + id;
-  state[key] = !state[key];
-  const task = document.getElementById('life-task-' + id);
-  const check = document.getElementById('life-check-' + id);
-  task.classList.toggle('done', !!state[key]);
-  check.textContent = state[key] ? '✓' : '';
-}
-function applyLifeTasks() {
-  ['morning','todo','duolingo','clean','tomorrow','budget','steps'].forEach(id => {
-    const key = 'life_' + id;
-    const task = document.getElementById('life-task-' + id);
-    const check = document.getElementById('life-check-' + id);
-    if (task && check) {
-      task.classList.toggle('done', !!state[key]);
-      check.textContent = state[key] ? '✓' : '';
-    }
-  });
-}
+// TEXTAREAS
+document.querySelectorAll('textarea.text-input').forEach(function(ta) {
+  ta.addEventListener('input', function() { if (ta.id in S) S[ta.id] = ta.value || null; });
+});
 
-// ── NUMBER/TIME INPUTS ──
-document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
-  inp.addEventListener('input', () => {
-    const key = inp.id;
-    if (key in state) {
-      state[key] = inp.value ? (inp.type === 'number' ? parseFloat(inp.value) : inp.value) : null;
+// SINGLE BUTTONS
+document.querySelectorAll('[data-key]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var key = btn.getAttribute('data-key');
+    var val = btn.getAttribute('data-val');
+    var grp = btn.closest('.btn-group');
+    if (btn.classList.contains('selected')) {
+      S[key] = null; btn.classList.remove('selected'); return;
     }
+    S[key] = val;
+    grp.querySelectorAll('[data-key="'+key+'"]').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
   });
 });
 
-// ── IMAGE ──
-function onImageSelect(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    imageBase64 = ev.target.result.split(',')[1];
-    const img = document.getElementById('previewImg');
-    img.src = ev.target.result; img.style.display = 'block';
-    document.getElementById('analyzeBtn').style.display = 'block';
-    document.getElementById('analyzeStatus').textContent = '이미지 준비 완료';
-  };
-  reader.readAsDataURL(file);
-}
-async function analyzeImage() {
-  if (!imageBase64) return;
-  const btn = document.getElementById('analyzeBtn');
-  const status = document.getElementById('analyzeStatus');
-  btn.disabled = true; status.className = 'analyze-status'; status.textContent = '분석 중...';
-  try {
-    const res = await fetch(SUPABASE_URL + '/functions/v1/analyze-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
-      body: JSON.stringify({ imageBase64, mediaType: 'image/jpeg' })
-    });
-    if (!res.ok) throw new Error(await res.text());
-    const parsed = await res.json();
-    if (parsed.error) throw new Error(parsed.error);
-    const fieldMap = {
-      sleep_score: 'sleep_score', sleep_total_min: 'sleep_total_min',
-      sleep_deep_min: 'sleep_deep_min', sleep_light_min: 'sleep_light_min',
-      sleep_rem_min: 'sleep_rem_min', sleep_awake_min: 'sleep_awake_min',
-      hr_night_avg: 'hr_night_avg', hr_resting: 'hr_resting',
-      hrv_night_avg: 'hrv_night_avg', body_battery_charged: 'body_battery_charged',
-      body_battery_morning: 'body_battery_morning'
-    };
-    const extracted = [];
-    for (const [key, sk] of Object.entries(fieldMap)) {
-      if (parsed[key] != null) {
-        state[sk] = parsed[key];
-        const el = document.getElementById(sk);
-        if (el) el.value = parsed[key];
-        extracted.push({ key, val: parsed[key] });
-      }
-    }
-    const labels = { sleep_score:'수면점수', sleep_total_min:'총수면(분)',
-      sleep_deep_min:'깊은수면', sleep_light_min:'알음수면', sleep_rem_min:'REM',
-      sleep_awake_min:'각성', hr_night_avg:'밤사이심박', hr_resting:'안정시심박',
-      hrv_night_avg:'HRV', body_battery_charged:'배터리충전', body_battery_morning:'배터리아침' };
-    const grid = document.getElementById('extractedGrid');
-    grid.style.display = 'grid';
-    grid.innerHTML = extracted.map(e => '<div class="extracted-item"><div class="ex-label">' + (labels[e.key]||e.key) + '</div><div class="ex-val">' + e.val + '</div></div>').join('');
-    status.className = 'analyze-status ok'; status.textContent = '✓ ' + extracted.length + '개 항목 추출';
-  } catch(err) {
-    status.className = 'analyze-status err'; status.textContent = '분석 실패';
-    console.error(err);
-  }
-  btn.disabled = false;
-}
-
-// ── SUPABASE ──
-async function supaFetch(path, options = {}) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1' + path, {
-    ...options,
-    headers: {
-      'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json', 'Prefer': 'return=representation',
-      ...options.headers
-    }
+// MULTI BUTTONS
+document.querySelectorAll('[data-mkey]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var key = btn.getAttribute('data-mkey');
+    var val = btn.getAttribute('data-mval');
+    btn.classList.toggle('selected');
+    if (!Array.isArray(S[key])) S[key] = [];
+    if (btn.classList.contains('selected')) { if (!S[key].includes(val)) S[key].push(val); }
+    else { S[key] = S[key].filter(function(v) { return v !== val; }); }
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json().catch(() => null);
+});
+
+// YN BUTTONS
+document.querySelectorAll('.yn-group').forEach(function(grp) {
+  var key = grp.getAttribute('data-yn');
+  grp.querySelectorAll('.yn-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var v = btn.getAttribute('data-v');
+      S[key] = v === 'Y';
+      grp.querySelectorAll('.yn-btn').forEach(function(b) { b.classList.remove('y-on','n-on'); });
+      btn.classList.add(v === 'Y' ? 'y-on' : 'n-on');
+    });
+  });
+});
+
+// CHECKBOXES
+document.querySelectorAll('[data-ck]').forEach(function(el) {
+  el.addEventListener('click', function(e) {
+    if (e.target.tagName === 'INPUT') return;
+    var key = el.getAttribute('data-ck');
+    S[key] = !S[key];
+    el.classList.toggle('done', !!S[key]);
+    el.querySelector('.ck-circle').textContent = S[key] ? '✓' : '';
+  });
+});
+
+// LIFE TASKS
+document.querySelectorAll('[data-life]').forEach(function(el) {
+  el.addEventListener('click', function() {
+    var id = el.getAttribute('data-life');
+    var key = 'life_' + id;
+    S[key] = !S[key];
+    el.classList.toggle('done', !!S[key]);
+    el.querySelector('.ck-circle').textContent = S[key] ? '✓' : '';
+  });
+});
+
+// TABS
+var TABS = ['heath','extend','life','history'];
+function switchTab(id) {
+  TABS.forEach(function(t) {
+    document.getElementById('panel-'+t).classList.toggle('active', t===id);
+    document.getElementById('nav-'+t).classList.toggle('active', t===id);
+  });
+  if (id === 'history') renderHistory();
+}
+document.getElementById('nav-heath').addEventListener('click', function() { switchTab('heath'); });
+document.getElementById('nav-extend').addEventListener('click', function() { switchTab('extend'); });
+document.getElementById('nav-life').addEventListener('click', function() { switchTab('life'); });
+document.getElementById('nav-history').addEventListener('click', function() { switchTab('history'); });
+
+// DATE NAV
+function updateHeader() {
+  var d = editDate || today();
+  document.getElementById('dateLabel').textContent = fmtKR(d);
+  document.getElementById('btnNextDay').style.opacity = d >= today() ? '0.2' : '1';
+}
+function shiftDay(delta) {
+  var base = editDate || today();
+  var parts = base.split('-').map(Number);
+  var nd = new Date(parts[0], parts[1]-1, parts[2]+delta);
+  var ns = nd.getFullYear()+'-'+pad(nd.getMonth()+1)+'-'+pad(nd.getDate());
+  if (ns > today()) return;
+  loadDate(ns);
+}
+document.getElementById('btnPrevDay').addEventListener('click', function() { shiftDay(-1); });
+document.getElementById('btnNextDay').addEventListener('click', function() { shiftDay(1); });
+
+// RESET UI
+function resetUI() {
+  document.querySelectorAll('input[type=number]').forEach(function(inp) {
+    if (inp.id !== 'sleep_total_min') inp.value = '';
+  });
+  document.querySelectorAll('input[type=time]').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('textarea.text-input').forEach(function(ta) { ta.value = ''; });
+  document.getElementById('wake_feeling').value = 3; document.getElementById('wfv').textContent = '3';
+  document.getElementById('condition_score').value = 5; document.getElementById('csv').textContent = '5';
+  document.getElementById('sleep_total_display').textContent = '';
+  document.getElementById('sleep_total_min').value = '';
+  document.querySelectorAll('.btn-opt').forEach(function(b) { b.classList.remove('selected'); });
+  document.querySelectorAll('.yn-btn').forEach(function(b) { b.classList.remove('y-on','n-on'); });
+  document.querySelectorAll('[data-ck], [data-life]').forEach(function(el) {
+    el.classList.remove('done');
+    var c = el.querySelector('.ck-circle');
+    if (c) c.textContent = '';
+  });
 }
 
+// APPLY DATA
+function applyData(d) {
+  Object.keys(d).forEach(function(k) { if (k in S && d[k] !== null) S[k] = d[k]; });
+  // inputs
+  document.querySelectorAll('input[type=number], input[type=time]').forEach(function(inp) {
+    if (inp.id in S && S[inp.id] !== null) inp.value = S[inp.id];
+  });
+  // textareas
+  ['reading_note','english_note','productivity_note','note_created_note','english_output_note'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && S[id]) el.value = S[id];
+  });
+  // sliders
+  [['wake_feeling','wfv'],['condition_score','csv']].forEach(function(p) {
+    var el = document.getElementById(p[0]);
+    if (el && S[p[0]] !== null) { el.value = S[p[0]]; document.getElementById(p[1]).textContent = S[p[0]]; }
+  });
+  // single buttons
+  document.querySelectorAll('[data-key]').forEach(function(btn) {
+    if (S[btn.getAttribute('data-key')] === btn.getAttribute('data-val')) btn.classList.add('selected');
+  });
+  // multi buttons
+  document.querySelectorAll('[data-mkey]').forEach(function(btn) {
+    var arr = S[btn.getAttribute('data-mkey')];
+    if (Array.isArray(arr) && arr.includes(btn.getAttribute('data-mval'))) btn.classList.add('selected');
+  });
+  // yn
+  document.querySelectorAll('.yn-group').forEach(function(grp) {
+    var key = grp.getAttribute('data-yn');
+    if (S[key] === null || S[key] === undefined) return;
+    var v = S[key] ? 'Y' : 'N';
+    grp.querySelectorAll('.yn-btn').forEach(function(btn) {
+      if (btn.getAttribute('data-v') === v) btn.classList.add(v==='Y'?'y-on':'n-on');
+    });
+  });
+  // checkboxes
+  document.querySelectorAll('[data-ck]').forEach(function(el) {
+    var key = el.getAttribute('data-ck');
+    if (S[key]) { el.classList.add('done'); el.querySelector('.ck-circle').textContent = '✓'; }
+  });
+  // life
+  document.querySelectorAll('[data-life]').forEach(function(el) {
+    var key = 'life_' + el.getAttribute('data-life');
+    if (S[key]) { el.classList.add('done'); el.querySelector('.ck-circle').textContent = '✓'; }
+  });
+  // sleep display
+  if (S.sleep_total_min) {
+    document.getElementById('sleep_total_display').textContent = Math.floor(S.sleep_total_min/60) + '시간 ' + (S.sleep_total_min%60) + '분';
+    document.getElementById('sleep_total_min').value = S.sleep_total_min;
+  }
+  // focus hours
+  if (S.focus_hours !== null && document.getElementById('focus_hours')) {
+    document.getElementById('focus_hours').value = S.focus_hours;
+  }
+}
+
+// LOAD
 async function loadToday() {
   try {
-    const data = await supaFetch('/daily_log?date=eq.' + getToday() + '&select=*');
-    if (data && data.length > 0) { applyData(data[0]); showToast('오늘 기록 불러옴'); }
-  } catch(e) { console.log('로드 실패:', e); }
+    var data = await sfetch('/daily_log?date=eq.'+today()+'&select=*');
+    if (data && data.length) { applyData(data[0]); toast('오늘 기록 불러옴'); }
+  } catch(e) { console.log('로드 실패', e); }
 }
-
-async function loadDateData(dateStr) {
-  const fresh = getInitialState();
-  Object.keys(state).forEach(k => { state[k] = fresh[k]; });
+async function loadDate(ds) {
+  S = freshState();
   resetUI();
   try {
-    const data = await supaFetch('/daily_log?date=eq.' + dateStr + '&select=*');
-    if (data && data.length > 0) applyData(data[0]);
+    var data = await sfetch('/daily_log?date=eq.'+ds+'&select=*');
+    if (data && data.length) applyData(data[0]);
   } catch(e) { console.error(e); }
-  editingDate = dateStr;
-  updateEditingBanner();
+  editDate = ds;
+  updateHeader();
   switchTab('heath');
 }
 
-function resetUI() {
-  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => { inp.value = ''; });
-  document.querySelectorAll('textarea.text-input').forEach(ta => { ta.value = ''; });
-  [['wake_feeling','wfv',3],['condition_score','csv',5],
-   ['digital_stimulation','dsv',3],['overthinking','otv',3],['tension','tnv',3]].forEach(([id,valId,def]) => {
-    const el = document.getElementById(id);
-    if (el) { el.value = def; document.getElementById(valId).textContent = def; }
-  });
-  document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('selected'));
-  document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('y-selected','n-selected'));
-  const disp = document.getElementById('sleep_total_display');
-  if (disp) disp.textContent = '';
-  applyLifeTasks();
-  applyCheckboxes();
-  imageBase64 = null;
-}
-
-function applyData(d) {
-  for (const [key, val] of Object.entries(d)) {
-    if (val === null || val === undefined) continue;
-    if (key in state) state[key] = val;
-  }
-  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
-    if (inp.id in state && state[inp.id] !== null) inp.value = state[inp.id];
-  });
-  // textareas
-  ['reading_note','english_note','productivity_note','note_created_note','english_output_note'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el && state[id]) el.value = state[id];
-  });
-  const sliders = { wake_feeling:'wfv', condition_score:'csv', digital_stimulation:'dsv', overthinking:'otv', tension:'tnv' };
-  Object.entries(sliders).forEach(([id, valId]) => {
-    const el = document.getElementById(id);
-    if (el && state[id] !== null) { el.value = state[id]; document.getElementById(valId).textContent = state[id]; }
-  });
-  // single buttons
-  document.querySelectorAll('[data-key]').forEach(btn => {
-    const key = btn.getAttribute('data-key'), val = btn.getAttribute('data-val');
-    if (state[key] !== null && state[key] === val) btn.classList.add('selected');
-  });
-  // yn buttons
-  const ynKeys = ['early_wakeup','hard_to_sleep_again','many_dreams',
-    'late_night_snack','processed_food','exercise_yn','caffeine_yn',
-    'recovery_stretch','recovery_walk','recovery_spacing',
-    'recovery_reading','english_yn','productivity_yn',
-    'daily_note_yn','focus_1h_yn','note_created_yn','english_output_yn','mental_browsing'];
-  ynKeys.forEach(key => {
-    if (state[key] === null || state[key] === undefined) return;
-    const val = state[key] ? 'Y' : 'N';
-    document.querySelectorAll('.yn-btn').forEach(btn => {
-      const oc = btn.getAttribute('onclick') || '';
-      if (oc.includes("'" + key + "'") && oc.includes("'" + val + "'")) {
-        btn.classList.add(val === 'Y' ? 'y-selected' : 'n-selected');
-      }
-    });
-  });
-  // multi buttons
-  document.querySelectorAll('[data-mkey]').forEach(btn => btn.classList.remove('selected'));
-  ['stress_source','digestion_yesterday','exercise_type'].forEach(key => {
-    if (!state[key] || !Array.isArray(state[key])) return;
-    document.querySelectorAll('[data-mkey="' + key + '"]').forEach(btn => {
-      if (state[key].includes(btn.getAttribute('data-mval'))) btn.classList.add('selected');
-    });
-  });
-  // sleep display
-  if (state.sleep_total_min) {
-    const h = Math.floor(state.sleep_total_min / 60), m = state.sleep_total_min % 60;
-    const el = document.getElementById('sleep_total_display');
-    if (el) el.textContent = h + '시간 ' + m + '분';
-    const el2 = document.getElementById('sleep_total_min');
-    if (el2) el2.value = state.sleep_total_min;
-  }
-  applyLifeTasks();
-  applyCheckboxes();
-}
-
-async function saveAll() {
-  const btn = document.getElementById('saveBtn');
+// SAVE
+document.getElementById('btnSave').addEventListener('click', async function() {
+  var btn = document.getElementById('btnSave');
   btn.disabled = true; btn.textContent = '저장 중...';
-  document.querySelectorAll('input[type=number], input[type=time]').forEach(inp => {
-    if (inp.id in state) state[inp.id] = inp.value !== '' ? (inp.type === 'number' ? parseFloat(inp.value) : inp.value) : null;
+  // sync inputs
+  document.querySelectorAll('input[type=number]').forEach(function(inp) {
+    if (inp.id === 'sleep_total_min') return;
+    if (inp.id in S) S[inp.id] = inp.value !== '' ? parseFloat(inp.value) : null;
   });
-  document.querySelectorAll('input[type=range]').forEach(inp => {
-    if (inp.id in state) state[inp.id] = parseInt(inp.value);
+  document.querySelectorAll('input[type=time]').forEach(function(inp) {
+    if (inp.id in S) S[inp.id] = inp.value || null;
   });
-  document.querySelectorAll('textarea.text-input').forEach(ta => {
-    if (ta.id in state) state[ta.id] = ta.value || null;
+  document.querySelectorAll('textarea.text-input').forEach(function(ta) {
+    if (ta.id in S) S[ta.id] = ta.value || null;
   });
-  const payload = Object.assign({}, state);
-  payload.date = editingDate || getToday();
+  S.focus_hours = document.getElementById('focus_hours').value ? parseFloat(document.getElementById('focus_hours').value) : null;
+  var payload = Object.assign({}, S);
+  payload.date = editDate || today();
   if (!payload.stress_source || !payload.stress_source.length) payload.stress_source = null;
   if (!payload.digestion_yesterday || !payload.digestion_yesterday.length) payload.digestion_yesterday = null;
   if (!payload.exercise_type || !payload.exercise_type.length) payload.exercise_type = null;
   else if (Array.isArray(payload.exercise_type)) payload.exercise_type = payload.exercise_type.join(', ');
   try {
-    const targetDate = payload.date;
-    const checkRes = await fetch(SUPABASE_URL + '/rest/v1/daily_log?date=eq.' + targetDate + '&select=id', {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-    });
-    const existing = await checkRes.json();
-    const exists = existing && existing.length > 0;
-    const res = await fetch(
-      exists ? SUPABASE_URL + '/rest/v1/daily_log?date=eq.' + targetDate : SUPABASE_URL + '/rest/v1/daily_log',
-      {
-        method: exists ? 'PATCH' : 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(payload)
-      }
+    var chk = await fetch(SURL+'/rest/v1/daily_log?date=eq.'+payload.date+'&select=id', { headers:{'apikey':SKEY,'Authorization':'Bearer '+SKEY} });
+    var existing = await chk.json();
+    var exists = existing && existing.length > 0;
+    var res = await fetch(
+      exists ? SURL+'/rest/v1/daily_log?date=eq.'+payload.date : SURL+'/rest/v1/daily_log',
+      { method: exists ? 'PATCH' : 'POST',
+        headers:{'apikey':SKEY,'Authorization':'Bearer '+SKEY,'Content-Type':'application/json','Prefer':'return=representation'},
+        body: JSON.stringify(payload) }
     );
     if (!res.ok) throw new Error(await res.text());
-    const savedDate = payload.date;
-    showToast('✓ ' + savedDate + ' 저장');
-    editingDate = null;
-    updateEditingBanner();
-    if (savedDate !== getToday()) {
-      const fresh = getInitialState();
-      Object.keys(state).forEach(k => { state[k] = fresh[k]; });
-      resetUI();
-      await loadToday();
-    }
-  } catch(e) {
-    showToast('저장 실패: ' + e.message.slice(0,60));
-    console.error(e);
-  }
+    var savedDate = payload.date;
+    toast('✓ ' + savedDate + ' 저장');
+    editDate = null; updateHeader();
+    if (savedDate !== today()) { S = freshState(); resetUI(); await loadToday(); }
+  } catch(e) { toast('저장 실패: ' + e.message.slice(0,60)); console.error(e); }
   btn.disabled = false; btn.textContent = '저장';
-}
+});
 
-// ── TOAST ──
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-// ── SHIFT DAY ──
-function shiftDay(delta) {
-  const base = editingDate || getToday();
-  const [y,m,d] = base.split('-').map(Number);
-  const newDate = new Date(y, m-1, d + delta);
-  const newStr = newDate.getFullYear() + '-' + String(newDate.getMonth()+1).padStart(2,'0') + '-' + String(newDate.getDate()).padStart(2,'0');
-  if (newStr > getToday()) return;
-  loadDateData(newStr);
-}
-function shiftMonth(delta) {
-  const el = document.getElementById('historyMonth');
-  if (!el.value) el.value = getMonthDefault();
-  const [y,m] = el.value.split('-').map(Number);
-  const d = new Date(y, m-1+delta, 1);
-  el.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-  renderHistory();
-}
-function getMonthDefault() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-}
-
-// ── CALENDAR ──
-function renderCalendar(month, records) {
-  const [y, m] = month.split('-').map(Number);
-  const firstDay = new Date(y, m-1, 1).getDay();
-  const lastDate = new Date(y, m, 0).getDate();
-  const today = getToday();
-  const dows = ['일','월','화','수','목','금','토'];
-  let html = '<div class="cal-grid">';
-  dows.forEach(d => { html += '<div class="cal-dow">' + d + '</div>'; });
-  for (let i = 0; i < firstDay; i++) html += '<div class="cal-cell empty"><span class="cal-num">0</span></div>';
-  for (let d = 1; d <= lastDate; d++) {
-    const dateStr = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    const isToday = dateStr === today;
-    const rec = records[dateStr];
-    let dotClass = rec === 'today' ? 'dot-today' : rec === 'past' ? 'dot-past' : 'dot-none';
-    html += '<div class="cal-cell ' + (rec ? 'has-record' : '') + ' ' + (isToday ? 'today' : '') + '" id="cal-' + dateStr + '">';
-    html += '<span class="cal-num">' + d + '</span>';
-    html += '<div class="cal-dot ' + dotClass + '"></div></div>';
-  }
-  html += '</div>';
-  html += '<div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;padding:0 2px">';
-  html += "<div style='display:flex;align-items:center;gap:5px'><div class='cal-dot dot-today' style='width:7px;height:7px'></div><span style='font-size:.6rem;color:var(--muted)'>당일 기록</span></div>";
-  html += "<div style='display:flex;align-items:center;gap:5px'><div class='cal-dot dot-past' style='width:7px;height:7px'></div><span style='font-size:.6rem;color:var(--muted)'>나중에 기록</span></div></div>";
-  document.getElementById('calendarGrid').innerHTML = html;
-  for (let d = 1; d <= lastDate; d++) {
-    const dateStr = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    const cell = document.getElementById('cal-' + dateStr);
-    if (cell) cell.addEventListener('click', () => loadDateData(dateStr));
-  }
-}
-
-// ── HISTORY ──
-async function renderHistory() {
-  const monthEl = document.getElementById('historyMonth');
-  if (!monthEl.value) monthEl.value = getMonthDefault();
-  const month = monthEl.value;
-  const [y, m] = month.split('-');
-  const from = y + '-' + m + '-01';
-  const lastDay = new Date(y, m, 0).getDate();
-  const to = y + '-' + m + '-' + String(lastDay).padStart(2,'0');
-  const container = document.getElementById('historyList');
-  container.innerHTML = '<div class="empty-msg">불러오는 중...</div>';
-  try {
-    const data = await supaFetch('/daily_log?date=gte.' + from + '&date=lte.' + to + '&select=*&order=date.desc');
-    if (!data || !data.length) {
-      renderCalendar(month, {});
-      container.innerHTML = '<div class="empty-msg">이 달의 기록이 없습니다.</div>';
-      return;
-    }
-    const minToHM = (min) => !min && min !== 0 ? '--' : Math.floor(min/60) + 'h ' + (min%60) + '분';
-    const today = getToday();
-    const records = {};
-    data.forEach(d => {
-      const recDate = d.created_at ? d.created_at.slice(0,10) : null;
-      records[d.date] = (recDate === d.date) ? 'today' : 'past';
-    });
-    renderCalendar(month, records);
-    container.innerHTML = data.map(d => {
-      const hdr = [
-        '<div class="journal-card" id="card-' + d.date + '">',
-        '<div class="jc-header" id="hdr-' + d.date + '">',
-          '<span class="jc-date">' + formatDateKR(d.date) + '</span>',
-          '<div style="display:flex;align-items:center;gap:8px">',
-            '<span class="jc-score">컨디션 ' + (d.condition_score || '--') + '/10</span>',
-            '<span class="jc-toggle">▾</span>',
-          '</div>',
-        '</div>',
-        '<div class="jc-body" id="body-' + d.date + '">',
-          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">',
-            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px">',
-              '<div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">수면</div>',
-              '<div style="font-size:.8rem">' + minToHM(d.sleep_total_min) + '</div>',
-            '</div>',
-            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px">',
-              '<div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">HRV</div>',
-              '<div style="font-size:.8rem;color:var(--joy)">' + (d.hrv_night_avg || '--') + ' ms</div>',
-            '</div>',
-            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px">',
-              '<div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">배터리</div>',
-              '<div style="font-size:.8rem;color:var(--career)">' + (d.body_battery_morning || '--') + '</div>',
-            '</div>',
-          '</div>',
-          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">',
-            (d.energy_feeling ? '<span class="tag" style="--tag-color:var(--morning)">' + d.energy_feeling + '</span>' : ''),
-            (d.mood ? '<span class="tag" style="--tag-color:var(--morning)">' + d.mood + '</span>' : ''),
-            (d.exercise_type ? '<span class="tag" style="--tag-color:var(--day)">' + d.exercise_type + (d.exercise_min ? ' ' + d.exercise_min + '분' : '') + '</span>' : ''),
-          '</div>',
-          '<div style="display:flex;gap:6px">',
-            '<button id="md-btn-' + d.date + '" style="font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted);cursor:pointer">📄 .md</button>',
-            '<button id="edit-btn-' + d.date + '" style="font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--morning);border-radius:3px;color:var(--morning);cursor:pointer">✏️ 수정</button>',
-          '</div>',
-        '</div>',
-        '</div>',
-      ];
-      return hdr.join('');
-    }).join('');
-
-    data.forEach(d => {
-      const mdBtn = document.getElementById('md-btn-' + d.date);
-      const editBtn = document.getElementById('edit-btn-' + d.date);
-      const hdrBtn = document.getElementById('hdr-' + d.date);
-      if (mdBtn) mdBtn.addEventListener('click', (e) => { e.stopPropagation(); exportSingleMD(d.date); });
-      if (editBtn) editBtn.addEventListener('click', (e) => { e.stopPropagation(); loadDateData(d.date); });
-      if (hdrBtn) hdrBtn.addEventListener('click', () => toggleCard(d.date));
-    });
-  } catch(e) {
-    container.innerHTML = '<div class="empty-msg">불러오기 실패</div>';
-    console.error(e);
-  }
-}
-
-function toggleCard(dateStr) {
-  const header = document.querySelector('#card-' + dateStr + ' .jc-header');
-  const body = document.getElementById('body-' + dateStr);
-  header.classList.toggle('open');
-  body.classList.toggle('open');
-}
-
-// ── EXPORT SINGLE MD ──
-async function exportSingleMD(dateStr) {
-  try {
-    showToast('불러오는 중...');
-    const data = await supaFetch('/daily_log?date=eq.' + dateStr + '&select=*');
-    if (!data || !data.length) { showToast('데이터 없음'); return; }
-    const d = data[0];
-    downloadMD(d);
-    showToast('✓ ' + d.date + ' .md 다운로드');
-  } catch(e) { showToast('내보내기 실패'); console.error(e); }
-}
-
+// BUILD MD
 function buildMD(d) {
-  const minToHM = (min) => min ? Math.floor(min/60) + 'h ' + (min%60) + '분' : '--';
-  const yn = (v) => v === true ? 'Y' : v === false ? 'N' : '--';
-  const lines = [
-    '---', 'date: ' + d.date, 'tags: daily-log', '---', '',
-    '# 🌅 Heath', '',
+  var yn = function(v) { return v===true?'Y':v===false?'N':'--'; };
+  var mh = function(min) { return min ? Math.floor(min/60)+'h '+(min%60)+'분' : '--'; };
+  var ck = function(v) { return v ? '[x]' : '[ ]'; };
+  return [
+    '---', 'date: '+d.date, 'tags: daily-log', '---', '',
+    '# Heath', '',
     '## 수면',
-    '- 취침:: ' + (d.bedtime || '--'),
-    '- 기상:: ' + (d.wake_time || '--'),
-    '- 총 수면:: ' + minToHM(d.sleep_total_min),
-    '- 기상 체감:: ' + (d.wake_feeling || '--') + '/5',
-    '- 중간 각성:: ' + (d.night_wakeup_count ?? '--') + '회',
-    '- 새벽 각성:: ' + yn(d.early_wakeup),
-    '- 꿈 많음:: ' + yn(d.many_dreams),
+    '- 취침: '+(d.bedtime||'--'),
+    '- 기상: '+(d.wake_time||'--'),
+    '- 총 수면: '+mh(d.sleep_total_min),
+    '- 수면 점수: '+(d.sleep_score||'--'),
+    '- 기상 체감: '+(d.wake_feeling||'--')+'/5',
+    '- 컨디션: '+(d.condition_score||'--')+'/10',
+    '- 중간 각성: '+(d.night_wakeup_count!=null?d.night_wakeup_count:'--')+'회',
+    '- 새벽 각성: '+yn(d.early_wakeup),
+    '- 꿈 많음: '+yn(d.many_dreams),
     '',
     '## Garmin',
-    '- 수면 점수:: ' + (d.sleep_score || '--'),
-    '- HRV:: ' + (d.hrv_night_avg || '--') + ' ms',
-    '- RHR:: ' + (d.hr_resting || '--') + ' bpm',
-    '- Body Battery 충전:: +' + (d.body_battery_charged || '--'),
-    '- Body Battery 아침:: ' + (d.body_battery_morning || '--'),
-    '',
-    '## 컨디션',
-    '- 컨디션:: ' + (d.condition_score || '--') + '/10',
-    '- 에너지:: ' + (d.energy_feeling || '--'),
-    '- 집중:: ' + (d.focus_state || '--'),
-    '- 감정:: ' + (d.mood || '--'),
+    '- HRV: '+(d.hrv_night_avg||'--')+' ms',
+    '- RHR: '+(d.hr_resting||'--')+' bpm',
+    '- Body Battery 충전: +'+(d.body_battery_charged||'--'),
+    '- Body Battery 아침: '+(d.body_battery_morning||'--'),
     '',
     '## 신체',
-    '- 몸무게:: ' + (d.weight_kg || '--') + ' kg',
-    '- 허리:: ' + (d.waist_cm || '--') + ' cm',
+    '- 몸무게: '+(d.weight_kg||'--')+' kg',
+    '- 허리: '+(d.waist_cm||'--')+' cm',
     '',
     '## 카페인',
-    '- 섭취:: ' + yn(d.caffeine_yn),
-    '- 마지막 시간:: ' + (d.caffeine_time || '--'),
-    '- 잔 수:: ' + (d.caffeine_cups || '--'),
+    '- 오후 카페인: '+yn(d.caffeine_yn),
+    '- 마지막 시간: '+(d.caffeine_time||'--'),
+    '- 잔 수: '+(d.caffeine_cups||'--'),
     '',
     '## 식사',
-    '- 저녁:: ' + (d.dinner_time || '--'),
-    '- 물 섭취:: ' + (d.water_ml || '--') + 'ml',
-    '- 야식:: ' + yn(d.late_night_snack),
-    '- 가공식품:: ' + yn(d.processed_food),
-    '- 전날 음식:: ' + (d.digestion_yesterday ? d.digestion_yesterday.join(', ') : '--'),
+    '- 저녁: '+(d.dinner_time||'--'),
+    '- 물 섭취: '+(d.water_ml||'--')+' ml',
+    '- 야식: '+yn(d.late_night_snack),
+    '- 가공식품: '+yn(d.processed_food),
+    '- 전날 음식: '+(d.digestion_yesterday?d.digestion_yesterday.join(', '):'--'),
     '',
     '## 운동',
-    '- ' + (d.exercise_yn ? '[x]' : '[ ]') + ' 운동',
-    '- 종류:: ' + (Array.isArray(d.exercise_type) ? d.exercise_type.join(', ') : d.exercise_type || '--'),
-    '- 시간:: ' + (d.exercise_min || '--') + '분',
-    '- 강도:: ' + (d.exercise_intensity || '--'),
-    '- 걸음 수:: ' + (d.steps || '--'),
-    '- 햇빛:: ' + (d.sunlight_min || '--') + '분',
-    '- ' + (d.recovery_stretch ? '[x]' : '[ ]') + ' 스트레칭',
+    '- '+ck(d.exercise_yn)+' 운동',
+    '- 종류: '+(Array.isArray(d.exercise_type)?d.exercise_type.join(', '):(d.exercise_type||'--')),
+    '- 시간: '+(d.exercise_min||'--')+'분',
+    '- 강도: '+(d.exercise_intensity||'--'),
+    '- 걸음 수: '+(d.steps||'--'),
+    '- 햇빛: '+(d.sunlight_min||'--')+'분',
+    '- '+ck(d.recovery_stretch)+' 스트레칭',
+    '- '+ck(d.recovery_walk)+' 산책',
     '',
     '## 생리주기',
-    '- ' + (d.cycle_phase || '--'),
+    '- '+(d.cycle_phase||'--'),
     '',
     '---', '',
-    '# 🌙 Extend', '',
+    '# Extend', '',
     '## 스트레스',
-    '- ' + (d.stress_source && d.stress_source.length ? d.stress_source.join(', ') : '없음'),
+    '- '+(d.stress_source&&d.stress_source.length?d.stress_source.join(', '):'없음'),
     '',
     '## Input',
-    '- ' + (d.recovery_reading ? '[x]' : '[ ]') + ' 독서' + (d.reading_note ? ' — ' + d.reading_note : ''),
-    '- ' + (d.english_yn ? '[x]' : '[ ]') + ' 영어' + (d.english_note ? ' — ' + d.english_note : ''),
-    '- ' + (d.productivity_yn ? '[x]' : '[ ]') + ' 생산성' + (d.productivity_note ? ' — ' + d.productivity_note : ''),
+    '- '+ck(d.recovery_reading)+' 5분 독서'+(d.reading_note?' — '+d.reading_note:''),
+    '- '+ck(d.english_yn)+' 10분 영어'+(d.english_note?' — '+d.english_note:''),
+    '- '+ck(d.productivity_yn)+' 10분 학습'+(d.productivity_note?' — '+d.productivity_note:''),
     '',
     '## Output',
-    '- ' + (d.daily_note_yn ? '[x]' : '[ ]') + ' Daily Note',
-    '- ' + (d.focus_1h_yn ? '[x]' : '[ ]') + ' 집중 1시간',
-    '- ' + (d.note_created_yn ? '[x]' : '[ ]') + ' 노트 생성' + (d.note_created_note ? ' — ' + d.note_created_note : ''),
-    '- ' + (d.english_output_yn ? '[x]' : '[ ]') + ' 영어 작문' + (d.english_output_note ? ' — ' + d.english_output_note : ''),
-    '',
-    '## 회복',
-    '- ' + (d.recovery_walk ? '[x]' : '[ ]') + ' 산책',
-    '- ' + (d.recovery_spacing ? '[x]' : '[ ]') + ' 멍때리기',
-    '',
-    '## 야간 자극',
-    '- 디지털 자극:: ' + (d.digital_stimulation || '--') + '/5',
-    '- 생각 많음:: ' + (d.overthinking || '--') + '/5',
-    '- 긴장감:: ' + (d.tension || '--') + '/5',
-    '- 머리 쓰는 검색:: ' + yn(d.mental_browsing),
+    '- '+ck(d.daily_note_yn)+' Daily Note',
+    '- '+ck(d.focus_1h_yn)+' 1시간 집중'+(d.focus_hours?' ('+d.focus_hours+'시간)':''),
+    '- '+ck(d.note_created_yn)+' 기록하기'+(d.note_created_note?' — '+d.note_created_note:''),
+    '- '+ck(d.english_output_yn)+' 영어 작문'+(d.english_output_note?' — '+d.english_output_note:''),
     '',
     '---', '',
-    '# 🏠 Life',
-    '- ' + (d.life_morning ? '[x]' : '[ ]') + ' 커튼 → 양치 → 몸무게 → 소금물',
-    '- ' + (d.life_todo ? '[x]' : '[ ]') + ' 오늘 할일 작성',
-    '- ' + (d.life_duolingo ? '[x]' : '[ ]') + ' 듀오링고',
-    '- ' + (d.life_clean ? '[x]' : '[ ]') + ' 집안일 10분',
-    '- ' + (d.life_tomorrow ? '[x]' : '[ ]') + ' 내일 준비 (옷, 도시락)',
-    '- ' + (d.life_budget ? '[x]' : '[ ]') + ' 가계부 기록',
-    '- ' + (d.life_steps ? '[x]' : '[ ]') + ' 걸음수 (손목닥터, 토스, 카뱅, 캐시워크, 머니워크, 당근)',
-  ];
-  return lines.join('\n');
+    '# Life',
+    '- '+ck(d.life_morning)+' 모닝루틴',
+    '- '+ck(d.life_todo)+' 오늘 할일 작성',
+    '- '+ck(d.life_duolingo)+' 듀오링고',
+    '- '+ck(d.life_clean)+' 집안일 10분',
+    '- '+ck(d.life_tomorrow)+' 내일 준비 (옷, 도시락)',
+    '- '+ck(d.life_budget)+' 가계부 기록',
+    '- '+ck(d.life_steps)+' 걸음수',
+  ].join('\n');
+}
+function dlMD(d) {
+  var blob = new Blob([buildMD(d)], {type:'text/markdown;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = d.date+'.md';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
 }
 
-function downloadMD(d) {
-  const md = buildMD(d);
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = d.date + '.md';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-}
-
-async function exportMD() {
+// EXPORT
+document.getElementById('btnExportMD').addEventListener('click', async function() {
   try {
-    const data = await supaFetch('/daily_log?date=eq.' + getToday() + '&select=*');
-    if (!data || !data.length) { showToast('저장된 데이터가 없습니다'); return; }
-    downloadMD(data[0]);
-    showToast('✓ .md 다운로드');
-  } catch(e) { showToast('내보내기 실패'); console.error(e); }
-}
-
-async function exportWeeklyMD() {
+    var data = await sfetch('/daily_log?date=eq.'+today()+'&select=*');
+    if (!data||!data.length) { toast('저장된 데이터 없음'); return; }
+    dlMD(data[0]); toast('✓ .md 다운로드');
+  } catch(e) { toast('실패'); }
+});
+document.getElementById('btnExportWeekly').addEventListener('click', async function() {
   try {
-    const today = getToday();
-    const d7 = new Date();
-    d7.setDate(d7.getDate() - 6);
-    const weekStart = d7.getFullYear() + '-' + String(d7.getMonth()+1).padStart(2,'0') + '-' + String(d7.getDate()).padStart(2,'0');
-    const data = await supaFetch('/daily_log?date=gte.' + weekStart + '&date=lte.' + today + '&select=*&order=date.asc');
-    if (!data.length) { showToast('최근 7일 데이터가 없습니다'); return; }
-    for (let i = 0; i < data.length; i++) {
-      downloadMD(data[i]);
-      await new Promise(r => setTimeout(r, 300));
+    var t = today();
+    var d7 = new Date(); d7.setDate(d7.getDate()-6);
+    var ws = d7.getFullYear()+'-'+pad(d7.getMonth()+1)+'-'+pad(d7.getDate());
+    var data = await sfetch('/daily_log?date=gte.'+ws+'&date=lte.'+t+'&select=*&order=date.asc');
+    if (!data||!data.length) { toast('최근 7일 데이터 없음'); return; }
+    for (var i=0; i<data.length; i++) {
+      dlMD(data[i]);
+      await new Promise(function(r) { setTimeout(r,300); });
     }
-    showToast('✓ ' + data.length + '개 .md 다운로드');
-  } catch(e) { showToast('내보내기 실패'); console.error(e); }
-}
-
-async function exportCSV() {
+    toast('✓ '+data.length+'개 .md 다운로드');
+  } catch(e) { toast('실패'); }
+});
+document.getElementById('btnExportCSV').addEventListener('click', async function() {
   try {
-    const data = await supaFetch('/daily_log?select=*&order=date.asc');
-    if (!data || !data.length) { showToast('데이터 없음'); return; }
-    const keys = Object.keys(data[0]);
-    const csv = [keys.join(','), ...data.map(r => keys.map(k => JSON.stringify(r[k] ?? '')).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'nday-log.csv';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-    showToast('✓ CSV 다운로드');
-  } catch(e) { showToast('내보내기 실패'); console.error(e); }
+    var data = await sfetch('/daily_log?select=*&order=date.asc');
+    if (!data||!data.length) { toast('데이터 없음'); return; }
+    var keys = Object.keys(data[0]);
+    var csv = [keys.join(',')].concat(data.map(function(r) { return keys.map(function(k) { return JSON.stringify(r[k]!=null?r[k]:''); }).join(','); })).join('\n');
+    var blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+    var a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nday-log.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    toast('✓ CSV 다운로드');
+  } catch(e) { toast('실패'); }
+});
+
+// HISTORY
+function defaultMonth() {
+  var d = new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1);
+}
+async function renderHistory() {
+  var el = document.getElementById('historyMonth');
+  if (!el.value) el.value = defaultMonth();
+  var month = el.value;
+  var parts = month.split('-');
+  var y = parseInt(parts[0]), m = parseInt(parts[1]);
+  var from = y+'-'+pad(m)+'-01';
+  var last = new Date(y,m,0).getDate();
+  var to = y+'-'+pad(m)+'-'+pad(last);
+  var container = document.getElementById('histList');
+  container.innerHTML = '<div class="empty-msg">불러오는 중...</div>';
+  try {
+    var data = await sfetch('/daily_log?date=gte.'+from+'&date=lte.'+to+'&select=*&order=date.desc');
+    var t = today();
+    var records = {};
+    if (data && data.length) data.forEach(function(d) {
+      records[d.date] = (d.created_at && d.created_at.slice(0,10)===d.date) ? 't' : 'p';
+    });
+    renderCal(month, records);
+    if (!data||!data.length) { container.innerHTML='<div class="empty-msg">이 달의 기록이 없습니다.</div>'; return; }
+    var mh = function(min) { return !min && min!==0 ? '--' : Math.floor(min/60)+'h '+(min%60)+'분'; };
+    container.innerHTML = data.map(function(d) {
+      return '<div class="jcard" id="jc-'+d.date+'">' +
+        '<div class="jcard-hdr" id="jh-'+d.date+'">' +
+          '<span class="jcard-date">'+fmtKR(d.date)+'</span>' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span class="jcard-score">컨디션 '+(d.condition_score||'--')+'/10</span>' +
+            '<span class="jcard-arrow">▾</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="jcard-body" id="jb-'+d.date+'">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">' +
+            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">수면</div><div style="font-size:.8rem">'+mh(d.sleep_total_min)+'</div></div>' +
+            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">HRV</div><div style="font-size:.8rem;color:var(--joy)">'+(d.hrv_night_avg||'--')+' ms</div></div>' +
+            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">배터리</div><div style="font-size:.8rem;color:var(--career)">'+(d.body_battery_morning||'--')+'</div></div>' +
+          '</div>' +
+          (d.exercise_type ? '<div style="margin-bottom:8px"><span class="tag" style="--tc:var(--day)">'+d.exercise_type+(d.exercise_min?' '+d.exercise_min+'분':'')+'</span></div>' : '') +
+          '<div style="display:flex;gap:6px">' +
+            '<button id="mb-'+d.date+'" style="font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted);cursor:pointer">📄 .md</button>' +
+            '<button id="eb-'+d.date+'" style="font-size:.62rem;padding:5px 12px;background:none;border:1px solid var(--morning);border-radius:3px;color:var(--morning);cursor:pointer">✏️ 수정</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    data.forEach(function(d) {
+      document.getElementById('jh-'+d.date).addEventListener('click', function() { toggleCard(d.date); });
+      document.getElementById('mb-'+d.date).addEventListener('click', function(e) { e.stopPropagation(); exportOne(d.date); });
+      document.getElementById('eb-'+d.date).addEventListener('click', function(e) { e.stopPropagation(); loadDate(d.date); });
+    });
+  } catch(e) { container.innerHTML='<div class="empty-msg">불러오기 실패</div>'; console.error(e); }
+}
+function toggleCard(ds) {
+  document.getElementById('jh-'+ds).classList.toggle('open');
+  document.getElementById('jb-'+ds).classList.toggle('open');
+}
+async function exportOne(ds) {
+  try {
+    var data = await sfetch('/daily_log?date=eq.'+ds+'&select=*');
+    if (!data||!data.length) { toast('데이터 없음'); return; }
+    dlMD(data[0]); toast('✓ '+ds+' .md');
+  } catch(e) { toast('실패'); }
+}
+function renderCal(month, records) {
+  var parts = month.split('-').map(Number);
+  var y = parts[0], m = parts[1];
+  var firstDay = new Date(y,m-1,1).getDay();
+  var lastDate = new Date(y,m,0).getDate();
+  var t = today();
+  var dows = ['일','월','화','수','목','금','토'];
+  var html = '<div class="cal-grid">';
+  dows.forEach(function(d) { html += '<div class="cal-dow">'+d+'</div>'; });
+  for (var i=0; i<firstDay; i++) html += '<div class="cal-cell empty"><span class="cal-num">0</span></div>';
+  for (var d=1; d<=lastDate; d++) {
+    var ds = y+'-'+pad(m)+'-'+pad(d);
+    var rec = records[ds];
+    html += '<div class="cal-cell'+(rec?' has-rec':'')+(ds===t?' today':'')+'" id="cl-'+ds+'">';
+    html += '<span class="cal-num">'+d+'</span>';
+    if (rec) html += '<div class="cal-dot '+(rec==='t'?'dot-t':'dot-p')+'"></div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  document.getElementById('calGrid').innerHTML = html;
+  for (var d=1; d<=lastDate; d++) {
+    (function(ds) {
+      var cell = document.getElementById('cl-'+ds);
+      if (cell) cell.addEventListener('click', function() { loadDate(ds); });
+    })(y+'-'+pad(m)+'-'+pad(d));
+  }
 }
 
-// ── NAV EVENTS (DOMContentLoaded 후 안전하게 연결) ──
-document.getElementById('nav-heath').addEventListener('click', () => switchTab('heath'));
-document.getElementById('nav-extend').addEventListener('click', () => switchTab('extend'));
-document.getElementById('nav-life').addEventListener('click', () => switchTab('life'));
-document.getElementById('nav-history').addEventListener('click', () => switchTab('history'));
+document.getElementById('historyMonth').addEventListener('change', renderHistory);
+document.getElementById('btnPrevMonth').addEventListener('click', function() {
+  var el = document.getElementById('historyMonth');
+  if (!el.value) el.value = defaultMonth();
+  var p = el.value.split('-').map(Number);
+  var nd = new Date(p[0],p[1]-2,1);
+  el.value = nd.getFullYear()+'-'+pad(nd.getMonth()+1);
+  renderHistory();
+});
+document.getElementById('btnNextMonth').addEventListener('click', function() {
+  var el = document.getElementById('historyMonth');
+  if (!el.value) el.value = defaultMonth();
+  var p = el.value.split('-').map(Number);
+  var nd = new Date(p[0],p[1],1);
+  el.value = nd.getFullYear()+'-'+pad(nd.getMonth()+1);
+  renderHistory();
+});
+
+// INIT
+updateHeader();
+loadToday();
 </script>
 </body>
 </html>
