@@ -116,7 +116,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 
 <div class="header">
   <div>
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.0</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.1</span></h1>
     <div class="day-nav">
       <button id="btnPrevDay">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -210,7 +210,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
   </div>
 
   <div class="section">
-    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍽 식사</div>
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍽 전날 식사</div>
     <div class="field"><div class="field-label">저녁 식사 시간</div><div class="time-input"><input type="time" id="dinner_time"></div></div>
     <div class="field"><div class="field-label">물 섭취량</div><div class="num-input"><input type="number" id="water_ml" placeholder="0" min="0" step="100"><span class="num-unit">ml</span></div></div>
     <div class="field">
@@ -786,7 +786,7 @@ function buildMD(d) {
     '- 마지막 시간: '+(d.caffeine_time||'--'),
     '- 잔 수: '+(d.caffeine_cups||'--'),
     '',
-    '## 식사',
+    '## 전날 식사',
     '- 저녁: '+(d.dinner_time||'--'),
     '- 물 섭취: '+(d.water_ml||'--')+' ml',
     '- 야식: '+yn(d.late_night_snack),
