@@ -127,7 +127,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 </div>
 
 <!-- HEATH -->
-<div class="panel active" id="panel-heath">
+<div class="panel" id="panel-heath">
 
   <div class="section">
     <div class="section-title"><div class="dot" style="--sc:var(--morning)"></div>💤 수면</div>
@@ -356,9 +356,17 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 </div>
 
 <!-- LIFE -->
-<div class="panel" id="panel-life">
+<div class="panel active" id="panel-life">
   <div class="section">
     <div class="section-title"><div class="dot" style="--sc:var(--life)"></div>🏠 오늘 루틴</div>
+    <div class="ck-task" data-life="supp_am">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">오전 영양제</div><div class="ck-sub" style="padding-left:0">유산균, 위</div></div>
+    </div>
+    <div class="ck-task" data-life="supp_pm">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">오후 영양제</div><div class="ck-sub" style="padding-left:0">flax, 칼마디, 비타민</div></div>
+    </div>
     <div class="ck-task" data-life="morning">
       <div class="ck-circle"></div>
       <div style="flex:1"><div class="ck-label">모닝루틴</div><div class="ck-sub" style="padding-left:0">커튼 → 양치 → 몸무게 → 소금물</div></div>
@@ -415,9 +423,9 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 </div>
 
 <div class="bottom-nav">
-  <button class="nav-btn active" id="nav-heath"><span class="nav-icon">🌅</span>Heath</button>
+  <button class="nav-btn active" id="nav-life"><span class="nav-icon">🏠</span>Life</button>
+  <button class="nav-btn" id="nav-heath"><span class="nav-icon">🌅</span>Heath</button>
   <button class="nav-btn" id="nav-extend"><span class="nav-icon">🌙</span>Extend</button>
-  <button class="nav-btn" id="nav-life"><span class="nav-icon">🏠</span>Life</button>
   <button class="nav-btn" id="nav-history"><span class="nav-icon">📅</span>기록</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -451,7 +459,7 @@ function freshState() {
     daily_note_yn:null, focus_1h_yn:null, focus_hours:null,
     note_created_yn:null, note_created_note:null,
     english_output_yn:null, english_output_note:null,
-    life_morning:null, life_todo:null, life_duolingo:null,
+    life_supp_am:null, life_supp_pm:null, life_morning:null, life_todo:null, life_duolingo:null,
     life_clean:null, life_tomorrow:null, life_budget:null, life_steps:null,
     key_scene_plan:null, key_scene_captured:null,
   };
@@ -586,7 +594,7 @@ document.querySelectorAll('[data-life]').forEach(function(el) {
 });
 
 // TABS
-var TABS = ['heath','extend','life','history'];
+var TABS = ['life','heath','extend','history'];
 function switchTab(id) {
   TABS.forEach(function(t) {
     document.getElementById('panel-'+t).classList.toggle('active', t===id);
@@ -824,6 +832,8 @@ function buildMD(d) {
     '',
     '---', '',
     '# Life',
+    '- '+ck(d.life_supp_am)+' 오전 영양제',
+    '- '+ck(d.life_supp_pm)+' 오후 영양제',
     '- '+ck(d.life_morning)+' 모닝루틴',
     '- '+ck(d.life_todo)+' 오늘 할일 작성',
     '- '+ck(d.life_duolingo)+' 듀오링고',
