@@ -359,23 +359,23 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 <div class="panel active" id="panel-life">
   <div class="section">
     <div class="section-title"><div class="dot" style="--sc:var(--life)"></div>🏠 오늘 루틴</div>
-    <div class="ck-task" data-life="supp_am">
-      <div class="ck-circle"></div>
-      <div style="flex:1"><div class="ck-label">오전 영양제</div><div class="ck-sub" style="padding-left:0">유산균, 위</div></div>
-    </div>
-    <div class="ck-task" data-life="supp_pm">
-      <div class="ck-circle"></div>
-      <div style="flex:1"><div class="ck-label">오후 영양제</div><div class="ck-sub" style="padding-left:0">flax, 칼마디, 비타민</div></div>
-    </div>
     <div class="ck-task" data-life="morning">
       <div class="ck-circle"></div>
       <div style="flex:1"><div class="ck-label">모닝루틴</div><div class="ck-sub" style="padding-left:0">커튼 → 양치 → 몸무게 → 소금물</div></div>
+    </div>
+    <div class="ck-task" data-life="supp_am">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">오전 영양제</div><div class="ck-sub" style="padding-left:0">유산균, 위</div></div>
     </div>
     <div class="ck-task" data-life="todo">
       <div class="ck-circle"></div><div class="ck-label">오늘 할일 작성</div>
     </div>
     <div class="ck-task" data-life="duolingo">
       <div class="ck-circle"></div><div class="ck-label">듀오링고</div>
+    </div>
+    <div class="ck-task" data-life="supp_pm">
+      <div class="ck-circle"></div>
+      <div style="flex:1"><div class="ck-label">오후 영양제</div><div class="ck-sub" style="padding-left:0">flax, 칼마디, 비타민</div></div>
     </div>
     <div class="ck-task" data-life="clean">
       <div class="ck-circle"></div><div class="ck-label">집안일 10분</div>
@@ -832,11 +832,11 @@ function buildMD(d) {
     '',
     '---', '',
     '# Life',
-    '- '+ck(d.life_supp_am)+' 오전 영양제',
-    '- '+ck(d.life_supp_pm)+' 오후 영양제',
     '- '+ck(d.life_morning)+' 모닝루틴',
+    '- '+ck(d.life_supp_am)+' 오전 영양제',
     '- '+ck(d.life_todo)+' 오늘 할일 작성',
     '- '+ck(d.life_duolingo)+' 듀오링고',
+    '- '+ck(d.life_supp_pm)+' 오후 영양제',
     '- '+ck(d.life_clean)+' 집안일 10분',
     '- '+ck(d.life_tomorrow)+' 내일 준비',
     '- '+ck(d.life_budget)+' 가계부 기록',
