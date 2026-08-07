@@ -197,7 +197,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
   </div>
 
   <div class="section">
-    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>☕ 카페인</div>
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍽 전날 식사</div>
     <div class="field">
       <div class="field-label">오후 카페인</div>
       <div class="yn-group" data-yn="caffeine_yn">
@@ -207,10 +207,6 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
     </div>
     <div class="field"><div class="field-label">마지막 시간</div><div class="time-input"><input type="time" id="caffeine_time"></div></div>
     <div class="field"><div class="field-label">잔 수</div><div class="num-input"><input type="number" id="caffeine_cups" placeholder="1" step="0.5" min="0"><span class="num-unit">잔</span></div></div>
-  </div>
-
-  <div class="section">
-    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍽 전날 식사</div>
     <div class="field"><div class="field-label">저녁 식사 시간</div><div class="time-input"><input type="time" id="dinner_time"></div></div>
     <div class="field"><div class="field-label">물 섭취량</div><div class="num-input"><input type="number" id="water_ml" placeholder="0" min="0" step="100"><span class="num-unit">ml</span></div></div>
     <div class="field">
@@ -249,6 +245,12 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
     </div>
   </div>
 
+  <div style="display:flex;align-items:center;gap:10px;margin:20px 0 16px">
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+    <span style="font-family:'DM Mono',monospace;font-size:1.02rem;color:var(--muted);letter-spacing:.12em;white-space:nowrap">오후 기록</span>
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+  </div>
+
   <div class="section">
     <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🏃 운동 / 활동</div>
     <div class="ck-task" data-ck="exercise_yn">
@@ -283,6 +285,10 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
       <div class="ck-circle"></div><div class="ck-label">산책</div>
     </div>
     <div class="field" style="margin-top:8px"><div class="field-label">걸음 수</div><div class="num-input"><input type="number" id="steps" placeholder="0" min="0"><span class="num-unit">보</span></div></div>
+    <div class="ck-task" data-ck="steps_8k" style="margin-top:4px">
+      <div class="ck-circle"></div>
+      <div class="ck-label">8000보 이상</div>
+    </div>
   </div>
 
   <div class="section">
@@ -449,7 +455,7 @@ function freshState() {
     dinner_time:null, hunger_before_bed:null, water_ml:null,
     late_night_snack:null, processed_food:null,
     digestion_yesterday:[],
-    exercise_yn:null, exercise_min:null, exercise_type:[], exercise_intensity:null,
+    exercise_yn:null, steps_8k:null, exercise_min:null, exercise_type:[], exercise_intensity:null,
     sunlight_min:null, recovery_stretch:null, recovery_walk:null,
     cycle_phase:null,
     stress_source:[],
@@ -789,12 +795,10 @@ function buildMD(d) {
     '- 몸무게: '+(d.weight_kg||'--')+' kg',
     '- 허리: '+(d.waist_cm||'--')+' cm',
     '',
-    '## 카페인',
+    '## 전날 식사',
     '- 오후 카페인: '+yn(d.caffeine_yn),
     '- 마지막 시간: '+(d.caffeine_time||'--'),
     '- 잔 수: '+(d.caffeine_cups||'--'),
-    '',
-    '## 전날 식사',
     '- 저녁: '+(d.dinner_time||'--'),
     '- 물 섭취: '+(d.water_ml||'--')+' ml',
     '- 야식: '+yn(d.late_night_snack),
@@ -807,6 +811,7 @@ function buildMD(d) {
     '- 시간: '+(d.exercise_min||'--')+'분',
     '- 강도: '+(d.exercise_intensity||'--'),
     '- 걸음 수: '+(d.steps||'--'),
+    '- '+ck(d.steps_8k)+' 8000보 이상',
     '- 햇빛: '+(d.sunlight_min||'--')+'분',
     '- '+ck(d.recovery_stretch)+' 스트레칭',
     '- '+ck(d.recovery_walk)+' 산책',
