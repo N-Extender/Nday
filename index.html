@@ -116,7 +116,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 
 <div class="header">
   <div>
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.1</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.2</span></h1>
     <div class="day-nav">
       <button id="btnPrevDay">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -198,37 +198,13 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 
   <div class="section">
     <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍽 전날 식사</div>
-    <div class="field">
-      <div class="field-label">오후 카페인</div>
-      <div class="yn-group" data-yn="caffeine_yn">
-        <button class="yn-btn" data-v="Y">Y</button>
-        <button class="yn-btn" data-v="N">N</button>
-      </div>
-    </div>
-    <div class="field"><div class="field-label">마지막 시간</div><div class="time-input"><input type="time" id="caffeine_time"></div></div>
-    <div class="field"><div class="field-label">잔 수</div><div class="num-input"><input type="number" id="caffeine_cups" placeholder="1" step="0.5" min="0"><span class="num-unit">잔</span></div></div>
     <div class="field"><div class="field-label">저녁 식사 시간</div><div class="time-input"><input type="time" id="dinner_time"></div></div>
-    <div class="field"><div class="field-label">물 섭취량</div><div class="num-input"><input type="number" id="water_ml" placeholder="0" min="0" step="100"><span class="num-unit">ml</span></div></div>
     <div class="field">
       <div class="field-label">취침 전 공복감</div>
       <div class="btn-group" style="--oc:var(--day)">
         <button class="btn-opt" data-key="hunger_before_bed" data-val="낮음">낮음</button>
         <button class="btn-opt" data-key="hunger_before_bed" data-val="보통">보통</button>
         <button class="btn-opt" data-key="hunger_before_bed" data-val="높음">높음</button>
-      </div>
-    </div>
-    <div class="field">
-      <div class="field-label">야식</div>
-      <div class="yn-group" data-yn="late_night_snack">
-        <button class="yn-btn" data-v="Y">Y</button>
-        <button class="yn-btn" data-v="N">N</button>
-      </div>
-    </div>
-    <div class="field">
-      <div class="field-label">가공식품</div>
-      <div class="yn-group" data-yn="processed_food">
-        <button class="yn-btn" data-v="Y">Y</button>
-        <button class="yn-btn" data-v="N">N</button>
       </div>
     </div>
     <div class="field">
@@ -412,6 +388,51 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
   </div>
 </div>
 
+<!-- MEAL -->
+<div class="panel" id="panel-meal">
+
+  <div class="section">
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>🍱 식사</div>
+    <div class="field"><div class="field-label">아침</div><textarea class="text-input" id="meal_breakfast" placeholder="아침 식사..." rows="2"></textarea></div>
+    <div class="field"><div class="field-label">점심</div><textarea class="text-input" id="meal_lunch" placeholder="점심 식사..." rows="2"></textarea></div>
+    <div class="field"><div class="field-label">저녁</div><textarea class="text-input" id="meal_dinner" placeholder="저녁 식사..." rows="2"></textarea></div>
+    <div class="field"><div class="field-label">간식</div><textarea class="text-input" id="meal_snack" placeholder="간식..." rows="2"></textarea></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>☕ 오후 카페인</div>
+    <div class="field">
+      <div class="field-label">오후 카페인</div>
+      <div class="yn-group" data-yn="caffeine_yn">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
+      </div>
+    </div>
+    <div class="field"><div class="field-label">마지막 시간</div><div class="time-input"><input type="time" id="caffeine_time"></div></div>
+    <div class="field"><div class="field-label">잔 수</div><div class="num-input"><input type="number" id="caffeine_cups" placeholder="1" step="0.5" min="0"><span class="num-unit">잔</span></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><div class="dot" style="--sc:var(--day)"></div>기타</div>
+    <div class="field"><div class="field-label">물 섭취량</div><div class="num-input"><input type="number" id="water_ml" placeholder="0" min="0" step="100"><span class="num-unit">ml</span></div></div>
+    <div class="field">
+      <div class="field-label">야식</div>
+      <div class="yn-group" data-yn="late_night_snack">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">가공식품</div>
+      <div class="yn-group" data-yn="processed_food">
+        <button class="yn-btn" data-v="Y">Y</button>
+        <button class="yn-btn" data-v="N">N</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <!-- HISTORY -->
 <div class="panel" id="panel-history">
   <div style="display:flex;gap:6px;align-items:center;margin-bottom:16px">
@@ -432,6 +453,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
   <button class="nav-btn active" id="nav-life"><span class="nav-icon">🏠</span>Life</button>
   <button class="nav-btn" id="nav-heath"><span class="nav-icon">🌅</span>Heath</button>
   <button class="nav-btn" id="nav-extend"><span class="nav-icon">🌙</span>Extend</button>
+  <button class="nav-btn" id="nav-meal"><span class="nav-icon">🍱</span>Meal</button>
   <button class="nav-btn" id="nav-history"><span class="nav-icon">📅</span>기록</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -465,6 +487,7 @@ function freshState() {
     daily_note_yn:null, focus_1h_yn:null, focus_hours:null,
     note_created_yn:null, note_created_note:null,
     english_output_yn:null, english_output_note:null,
+    meal_breakfast:null, meal_lunch:null, meal_dinner:null, meal_snack:null,
     life_supp_am:null, life_supp_pm:null, life_morning:null, life_todo:null, life_duolingo:null,
     life_clean:null, life_tomorrow:null, life_budget:null, life_steps:null,
     key_scene_plan:null, key_scene_captured:null,
@@ -600,7 +623,7 @@ document.querySelectorAll('[data-life]').forEach(function(el) {
 });
 
 // TABS
-var TABS = ['life','heath','extend','history'];
+var TABS = ['life','heath','extend','meal','history'];
 function switchTab(id) {
   TABS.forEach(function(t) {
     document.getElementById('panel-'+t).classList.toggle('active', t===id);
@@ -611,6 +634,7 @@ function switchTab(id) {
 document.getElementById('nav-heath').addEventListener('click', function() { switchTab('heath'); });
 document.getElementById('nav-extend').addEventListener('click', function() { switchTab('extend'); });
 document.getElementById('nav-life').addEventListener('click', function() { switchTab('life'); });
+document.getElementById('nav-meal').addEventListener('click', function() { switchTab('meal'); });
 document.getElementById('nav-history').addEventListener('click', function() { switchTab('history'); });
 
 // DATE NAV
@@ -658,7 +682,7 @@ function applyData(d) {
     if (inp.id in S && S[inp.id] !== null) inp.value = S[inp.id];
   });
   // textareas
-  ['reading_note','english_note','productivity_note','note_created_note','english_output_note','key_scene_plan','key_scene_captured'].forEach(function(id) {
+  ['reading_note','english_note','productivity_note','note_created_note','english_output_note','key_scene_plan','key_scene_captured','meal_breakfast','meal_lunch','meal_dinner','meal_snack'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el && S[id]) el.value = S[id];
   });
@@ -795,6 +819,23 @@ function buildMD(d) {
     '- 몸무게: '+(d.weight_kg||'--')+' kg',
     '- 허리: '+(d.waist_cm||'--')+' cm',
     '',
+    '# Meal', '',
+    '## 식사',
+    '- 아침: '+(d.meal_breakfast||'--'),
+    '- 점심: '+(d.meal_lunch||'--'),
+    '- 저녁: '+(d.meal_dinner||'--'),
+    '- 간식: '+(d.meal_snack||'--'),
+    '',
+    '## 오후 카페인',
+    '- 섭취: '+yn(d.caffeine_yn),
+    '- 마지막 시간: '+(d.caffeine_time||'--'),
+    '- 잔 수: '+(d.caffeine_cups||'--'),
+    '',
+    '- 물 섭취: '+(d.water_ml||'--')+' ml',
+    '- '+ck(d.late_night_snack)+' 야식',
+    '- '+ck(d.processed_food)+' 가공식품',
+    '',
+    '---', '',
     '## 전날 식사',
     '- 오후 카페인: '+yn(d.caffeine_yn),
     '- 마지막 시간: '+(d.caffeine_time||'--'),
