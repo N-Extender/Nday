@@ -784,8 +784,10 @@ document.getElementById('btnSave').addEventListener('click', async function() {
     if (!res.ok) throw new Error(await res.text());
     var savedDate = payload.date;
     toast('✓ ' + savedDate + ' 저장');
-    editDate = null; updateHeader();
-    if (savedDate !== today()) { S = freshState(); resetUI(); await loadToday(); }
+    // 과거 날짜 저장 시 해당 날짜에 그대로 머묾
+    if (savedDate === today()) {
+      editDate = null; updateHeader();
+    }
   } catch(e) { toast('저장 실패: ' + e.message.slice(0,60)); console.error(e); }
   btn.disabled = false; btn.textContent = '저장';
 });
