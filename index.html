@@ -789,6 +789,11 @@ document.getElementById('btnSave').addEventListener('click', async function() {
   document.querySelectorAll('textarea.text-input').forEach(function(ta) {
     if (ta.id in S) S[ta.id] = ta.value || null;
   });
+  // KPT 명시적 sync
+  ['kpt_keep','kpt_problem','kpt_try','key_scene_plan','key_scene_captured'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) S[id] = el.value || null;
+  });
   S.focus_hours = document.getElementById('focus_hours').value ? parseFloat(document.getElementById('focus_hours').value) : null;
   var payload = Object.assign({}, S);
   payload.date = editDate || today();
