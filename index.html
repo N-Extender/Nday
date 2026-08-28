@@ -705,7 +705,7 @@ function applyData(d) {
     if (inp.id in S && S[inp.id] !== null) inp.value = S[inp.id];
   });
   // textareas
-  ['reading_note','english_note','productivity_note','note_created_note','english_output_note','key_scene_plan','key_scene_captured','meal_breakfast','meal_lunch','meal_dinner','meal_snack'].forEach(function(id) {
+  ['reading_note','english_note','productivity_note','note_created_note','english_output_note','key_scene_plan','key_scene_captured','meal_breakfast','meal_lunch','meal_dinner','meal_snack','kpt_keep','kpt_problem','kpt_try'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el && S[id]) el.value = S[id];
   });
