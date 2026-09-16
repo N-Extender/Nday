@@ -88,15 +88,24 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 
 .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:12px; }
 .cal-dow { text-align:center; font-family:'DM Mono',monospace; font-size:.58rem; color:var(--muted); padding:4px 0; }
-.cal-cell { aspect-ratio:1; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; background:var(--surface); border:1px solid var(--border); gap:2px; }
-.cal-cell.empty { background:none; border-color:transparent; cursor:default; }
-.cal-cell.today { border-color:var(--joy); }
-.cal-cell.has-rec { background:var(--surface2); }
-.cal-num { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--text); }
+.cal-cell {
+  aspect-ratio:1; border-radius:10px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; cursor:pointer;
+  background:#F8F6F1; border:none;
+  box-shadow: 3px 3px 6px #EAE6E1, -1px -1px 3px #FFFFFF;
+  gap:2px; transition:all .15s;
+}
+.cal-cell.empty { background:none; box-shadow:none; cursor:default; }
+.cal-cell.today { box-shadow: 3px 3px 6px #EAE6E1, -1px -1px 3px #FFFFFF; }
+.cal-cell.has-rec { background:#F8F6F1; }
+.cal-num { font-family:'DM Mono',monospace; font-size:.7rem; color:#BCB7A6; }
+.cal-cell.has-rec .cal-num { color:#1F4A50; font-weight:600; }
+.cal-cell.today .cal-num { color:#1F4A50; font-weight:600; }
 .cal-cell.empty .cal-num { color:transparent; }
-.cal-dot { width:5px; height:5px; border-radius:50%; }
-.dot-t { background:var(--health); }
-.dot-p { background:var(--muted); }
+.cal-dot { width:6px; height:6px; border-radius:50%; }
+.dot-t { background:#B56A55; }
+.dot-p { background:#D9D6CB; }
+.cal-today-label { font-size:.5rem; color:#B79C81; line-height:1; }
 
 .jcard { background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:10px; overflow:hidden; }
 .jcard-hdr { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; cursor:pointer; }
@@ -116,7 +125,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 
 <div class="header">
   <div>
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.4</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.5</span></h1>
     <div class="day-nav">
       <button id="btnPrevDay">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -1060,11 +1069,17 @@ function renderCal(month, records) {
   for (var d=1; d<=lastDate; d++) {
     var ds = y+'-'+pad(m)+'-'+pad(d);
     var rec = records[ds];
-    html += '<div class="cal-cell'+(rec?' has-rec':'')+(ds===t?' today':'')+'" id="cl-'+ds+'">';
+    var isToday = ds === t;
+    html += '<div class="cal-cell'+(rec?' has-rec':'')+(isToday?' today':'')+'" id="cl-'+ds+'">';
     html += '<span class="cal-num">'+d+'</span>';
-    if (rec) html += '<div class="cal-dot '+(rec==='t'?'dot-t':'dot-p')+'"></div>';
+    html += '<div class="cal-dot '+(rec?'dot-t':'dot-p')+'"></div>';
+    if (isToday) html += '<div class="cal-today-label">Today</div>';
     html += '</div>';
   }
+  html += '</div>';
+  html += '<div style="display:flex;gap:16px;justify-content:center;align-items:center;margin-bottom:16px">';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div class="cal-dot dot-t"></div><span style="font-size:.62rem;color:#B7AF9B;letter-spacing:.04em">DATA RECORDED</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div class="cal-dot dot-p"></div><span style="font-size:.62rem;color:#B7AF9B;letter-spacing:.04em">NO DATA</span></div>';
   html += '</div>';
   document.getElementById('calGrid').innerHTML = html;
   for (var d=1; d<=lastDate; d++) {
