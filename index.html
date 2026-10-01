@@ -119,6 +119,56 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 .divider { height:1px; background:var(--border); margin:16px 0; }
 .sec-label { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--text); letter-spacing:.14em; text-transform:uppercase; margin-bottom:12px; padding-bottom:5px; border-bottom:1px solid var(--border); }
 .empty-msg { font-size:.75rem; color:var(--muted); text-align:center; padding:24px 0; }
+
+/* WEEKLY NOTE */
+.weekly-note-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  position: sticky;
+  top: 65px;
+  z-index: 90;
+  cursor: pointer;
+}
+.weekly-note-bar.editing { cursor: default; }
+.weekly-note-display {
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.5;
+  min-height: 1.2em;
+  white-space: pre-wrap;
+}
+.weekly-note-display.empty { color: var(--faint); font-style: italic; }
+.weekly-note-edit {
+  display: none;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'Noto Serif KR', serif;
+  font-size: .78rem;
+  padding: 6px 10px;
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+}
+.weekly-note-actions { display:none; justify-content:flex-end; gap:6px; margin-top:5px; }
+.weekly-note-actions button {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: none;
+  color: var(--muted);
+}
+.weekly-note-actions .save-wn {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
 </style>
 </head>
 <body>
@@ -133,6 +183,15 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
     </div>
   </div>
   <button class="save-btn" id="btnSave">저장</button>
+</div>
+
+<div class="weekly-note-bar" id="weeklyNoteBar">
+  <div class="weekly-note-display empty" id="weeklyNoteDisplay">이번 주 목표를 입력하세요...</div>
+  <textarea class="weekly-note-edit" id="weeklyNoteEdit" rows="2" placeholder="이번 주 목표, 기억할 것..."></textarea>
+  <div class="weekly-note-actions" id="weeklyNoteActions">
+    <button class="cancel-wn" id="weeklyNoteCancel">취소</button>
+    <button class="save-wn" id="weeklyNoteSave">저장</button>
+  </div>
 </div>
 
 <!-- HEATH -->
@@ -841,8 +900,12 @@ function buildMD(d) {
   var num = function(v) { return (v===null||v===undefined)?'--':v; };
   var mh = function(min) { return min ? Math.floor(min/60)+'h '+(min%60)+'분' : '--'; };
   var ck = function(v) { return v ? '[x]' : '[ ]'; };
+  var weeklyNote = '';
+  try { weeklyNote = localStorage.getItem('nday_weekly_note') || ''; } catch(e) {}
   return [
     '---', 'created: '+d.date, 'tags: daily-log', '---', '',
+    (weeklyNote ? '> '+weeklyNote : ''),
+    (weeklyNote ? '' : ''),
     '# Life',
     '- '+ck(d.life_supp_am)+' 오전 영양제',
     '- '+ck(d.life_morning)+' 모닝루틴',
@@ -1124,6 +1187,61 @@ document.getElementById('btnNextMonth').addEventListener('click', function() {
   el.value = nd.getFullYear()+'-'+pad(nd.getMonth()+1);
   renderHistory();
 });
+
+// WEEKLY NOTE
+(function() {
+  var WKEY = 'nday_weekly_note';
+  var bar = document.getElementById('weeklyNoteBar');
+  var disp = document.getElementById('weeklyNoteDisplay');
+  var edit = document.getElementById('weeklyNoteEdit');
+  var actions = document.getElementById('weeklyNoteActions');
+  var btnSaveWN = document.getElementById('weeklyNoteSave');
+  var btnCancelWN = document.getElementById('weeklyNoteCancel');
+
+  function loadNote() {
+    try {
+      var saved = localStorage.getItem(WKEY);
+      if (saved) {
+        disp.textContent = saved;
+        disp.classList.remove('empty');
+      }
+    } catch(e) {}
+  }
+
+  function openEdit() {
+    try { edit.value = localStorage.getItem(WKEY) || ''; } catch(e) {}
+    disp.style.display = 'none';
+    edit.style.display = 'block';
+    actions.style.display = 'flex';
+    bar.classList.add('editing');
+    edit.focus();
+  }
+
+  function closeEdit() {
+    disp.style.display = '';
+    edit.style.display = 'none';
+    actions.style.display = 'none';
+    bar.classList.remove('editing');
+  }
+
+  disp.addEventListener('click', openEdit);
+
+  btnSaveWN.addEventListener('click', function() {
+    var val = edit.value.trim();
+    try { localStorage.setItem(WKEY, val); } catch(e) {}
+    if (val) {
+      disp.textContent = val;
+      disp.classList.remove('empty');
+    } else {
+      disp.textContent = '이번 주 목표를 입력하세요...';
+      disp.classList.add('empty');
+    }
+    closeEdit();
+  });
+
+  btnCancelWN.addEventListener('click', closeEdit);
+  loadNote();
+})();
 
 // INIT
 updateHeader();
