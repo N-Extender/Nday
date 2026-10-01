@@ -125,7 +125,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 
 <div class="header">
   <div>
-    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.5</span></h1>
+    <h1>N-day Log <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);vertical-align:middle">v1.3.6</span></h1>
     <div class="day-nav">
       <button id="btnPrevDay">‹</button>
       <div class="date" id="dateLabel">—</div>
@@ -838,6 +838,7 @@ document.getElementById('btnSave').addEventListener('click', async function() {
 // BUILD MD
 function buildMD(d) {
   var yn = function(v) { return v===true?'Y':v===false?'N':'--'; };
+  var num = function(v) { return (v===null||v===undefined)?'--':v; };
   var mh = function(min) { return min ? Math.floor(min/60)+'h '+(min%60)+'분' : '--'; };
   var ck = function(v) { return v ? '[x]' : '[ ]'; };
   return [
@@ -873,31 +874,31 @@ function buildMD(d) {
     '- 취침: '+(d.bedtime||'--'),
     '- 기상: '+(d.wake_time||'--'),
     '- 총 수면: '+mh(d.sleep_total_min),
-    '- 수면 점수: '+(d.sleep_score||'--'),
-    '- 기상 체감: '+(d.wake_feeling||'--')+'/5',
-    '- 컨디션: '+(d.condition_score||'--')+'/10',
-    '- 중간 각성: '+(d.night_wakeup_count!=null?d.night_wakeup_count:'--')+'회',
+    '- 수면 점수: '+num(d.sleep_score),
+    '- 기상 체감: '+num(d.wake_feeling)+'/5',
+    '- 컨디션: '+num(d.condition_score)+'/10',
+    '- 중간 각성: '+num(d.night_wakeup_count)+'회',
     '- 새벽 각성: '+yn(d.early_wakeup),
     '- 꿈 많음: '+yn(d.many_dreams),
     '',
     '## Garmin',
-    '- HRV: '+(d.hrv_night_avg||'--')+' ms',
-    '- RHR: '+(d.hr_resting||'--')+' bpm',
-    '- Body Battery 충전: +'+(d.body_battery_charged||'--'),
-    '- Body Battery 아침: '+(d.body_battery_morning||'--'),
+    '- HRV: '+num(d.hrv_night_avg)+' ms',
+    '- RHR: '+num(d.hr_resting)+' bpm',
+    '- Body Battery 충전: +'+num(d.body_battery_charged),
+    '- Body Battery 아침: '+num(d.body_battery_morning),
     '',
     '## 신체',
-    '- 몸무게: '+(d.weight_kg||'--')+' kg',
-    '- 허리: '+(d.waist_cm||'--')+' cm',
+    '- 몸무게: '+num(d.weight_kg)+' kg',
+    '- 허리: '+num(d.waist_cm)+' cm',
     '',
     '## 운동',
     '- '+ck(d.exercise_yn)+' 운동',
     '- 종류: '+(Array.isArray(d.exercise_type)?d.exercise_type.join(', '):(d.exercise_type||'--')),
-    '- 시간: '+(d.exercise_min||'--')+'분',
+    '- 시간: '+num(d.exercise_min)+'분',
     '- 강도: '+(d.exercise_intensity||'--'),
-    '- 걸음 수: '+(d.steps||'--'),
+    '- 걸음 수: '+num(d.steps),
     '- '+ck(d.steps_8k)+' 8000보 이상',
-    '- 햇빛: '+(d.sunlight_min||'--')+'분',
+    '- 햇빛: '+num(d.sunlight_min)+'분',
     '- '+ck(d.recovery_stretch)+' 스트레칭',
     '- '+ck(d.recovery_walk)+' 산책',
     '',
@@ -910,19 +911,16 @@ function buildMD(d) {
     '- '+(d.stress_source&&d.stress_source.length?d.stress_source.join(', '):'없음'),
     '',
     '## ⏱️ 집중시간',
-    '- '+(d.focus_hours||0)+'h '+(String(d.focus_minutes||0).padStart(2,'0'))+'m',
+    '- '+num(d.focus_hours)+'h '+String(d.focus_minutes!=null?d.focus_minutes:'-').padStart(2,'0')+'m',
     '',
     '## 📥 INPUT',
-    '- '+ck(d.english_yn)+' 10분 영어'+(d.english_note?' — '+d.english_note:''),
-    '- '+ck(d.productivity_yn)+' 10분 학습'+(d.productivity_note?' — '+d.productivity_note:''),
+    ''+(d.english_note||'--'),
     '',
     '## 💭 THINKING',
     ''+(d.thinking_note||'--'),
     '',
     '## 📤 OUTPUT',
-    '- '+ck(d.daily_note_yn)+' Daily Note',
-    '- '+ck(d.note_created_yn)+' 기록하기'+(d.note_created_note?' — '+d.note_created_note:''),
-    '- '+ck(d.english_output_yn)+' 영어 작문'+(d.english_output_note?' — '+d.english_output_note:''),
+    ''+(d.note_created_note||'--'),
     '',
     '---', '',
     '# Meal', '',
@@ -935,14 +933,14 @@ function buildMD(d) {
     '## 오후 카페인',
     '- 섭취: '+yn(d.caffeine_yn),
     '- 마지막 시간: '+(d.caffeine_time||'--'),
-    '- 잔 수: '+(d.caffeine_cups||'--'),
+    '- 잔 수: '+num(d.caffeine_cups),
     '',
     '## 전날 식사',
     '- 저녁: '+(d.dinner_time||'--'),
     '- 전날 음식: '+(d.digestion_yesterday?d.digestion_yesterday.join(', '):'--'),
     '',
     '## 기타',
-    '- 물 섭취: '+(d.water_ml||'--')+' ml',
+    '- 물 섭취: '+num(d.water_ml)+' ml',
     '- '+ck(d.late_night_snack)+' 야식',
     '- '+ck(d.processed_food)+' 가공식품',
   ].join('\n');
@@ -1020,15 +1018,15 @@ async function renderHistory() {
         '<div class="jcard-hdr" id="jh-'+d.date+'">' +
           '<span class="jcard-date">'+fmtKR(d.date)+'</span>' +
           '<div style="display:flex;align-items:center;gap:8px">' +
-            '<span class="jcard-score">컨디션 '+(d.condition_score||'--')+'/10</span>' +
+            '<span class="jcard-score">컨디션 '+num(d.condition_score)+'/10</span>' +
             '<span class="jcard-arrow">▾</span>' +
           '</div>' +
         '</div>' +
         '<div class="jcard-body" id="jb-'+d.date+'">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">' +
             '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">수면</div><div style="font-size:.8rem">'+mh(d.sleep_total_min)+'</div></div>' +
-            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">HRV</div><div style="font-size:.8rem;color:var(--joy)">'+(d.hrv_night_avg||'--')+' ms</div></div>' +
-            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">배터리</div><div style="font-size:.8rem;color:var(--career)">'+(d.body_battery_morning||'--')+'</div></div>' +
+            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">HRV</div><div style="font-size:.8rem;color:var(--joy)">'+num(d.hrv_night_avg)+' ms</div></div>' +
+            '<div style="background:var(--surface2);border-radius:4px;padding:7px 9px"><div style="font-size:.55rem;color:var(--muted);margin-bottom:2px">배터리</div><div style="font-size:.8rem;color:var(--career)">'+num(d.body_battery_morning)+'</div></div>' +
           '</div>' +
           (d.exercise_type ? '<div style="margin-bottom:8px"><span class="tag" style="--tc:var(--day)">'+d.exercise_type+(d.exercise_min?' '+d.exercise_min+'분':'')+'</span></div>' : '') +
           '<div style="display:flex;gap:6px">' +
