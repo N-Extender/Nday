@@ -1235,7 +1235,7 @@ document.getElementById('btnNextMonth').addEventListener('click', function() {
       await fetch(SURL+'/rest/v1/weekly_note?id=eq.1', {
         method: 'PATCH',
         headers: {'apikey':SKEY,'Authorization':'Bearer '+SKEY,'Content-Type':'application/json','Prefer':'return=representation'},
-        body: JSON.stringify({content: val, updated_at: new Date().toISOString()})
+        body: JSON.stringify({content: val})
       });
       currentContent = val;
       if (val) {
@@ -1245,7 +1245,11 @@ document.getElementById('btnNextMonth').addEventListener('click', function() {
         disp.textContent = '이번 주 목표를 입력하세요...';
         disp.classList.add('empty');
       }
-    } catch(e) { console.log('weekly note save fail', e); }
+      toast('✓ 주간 목표 저장');
+    } catch(e) {
+      toast('저장 실패: ' + e.message);
+      console.log('weekly note save fail', e);
+    }
     closeEdit();
   });
 
