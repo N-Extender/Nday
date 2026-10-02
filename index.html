@@ -900,8 +900,7 @@ function buildMD(d) {
   var num = function(v) { return (v===null||v===undefined)?'--':v; };
   var mh = function(min) { return min ? Math.floor(min/60)+'h '+(min%60)+'분' : '--'; };
   var ck = function(v) { return v ? '[x]' : '[ ]'; };
-  var weeklyNote = '';
-  try { weeklyNote = localStorage.getItem('nday_weekly_note') || ''; } catch(e) {}
+  var weeklyNote = document.getElementById('weeklyNoteDisplay').classList.contains('empty') ? '' : (document.getElementById('weeklyNoteDisplay').textContent || '');
   return [
     '---', 'created: '+d.date, 'tags: daily-log', '---', '',
     (weeklyNote ? '> '+weeklyNote : ''),
@@ -1190,26 +1189,30 @@ document.getElementById('btnNextMonth').addEventListener('click', function() {
 
 // WEEKLY NOTE
 (function() {
-  var WKEY = 'nday_weekly_note';
   var bar = document.getElementById('weeklyNoteBar');
   var disp = document.getElementById('weeklyNoteDisplay');
   var edit = document.getElementById('weeklyNoteEdit');
   var actions = document.getElementById('weeklyNoteActions');
   var btnSaveWN = document.getElementById('weeklyNoteSave');
   var btnCancelWN = document.getElementById('weeklyNoteCancel');
+  var currentContent = '';
 
-  function loadNote() {
+  async function loadNote() {
     try {
-      var saved = localStorage.getItem(WKEY);
-      if (saved) {
-        disp.textContent = saved;
+      var res = await fetch(SURL+'/rest/v1/weekly_note?id=eq.1&select=content', {
+        headers: {'apikey':SKEY,'Authorization':'Bearer '+SKEY}
+      });
+      var data = await res.json();
+      if (data && data.length && data[0].content) {
+        currentContent = data[0].content;
+        disp.textContent = currentContent;
         disp.classList.remove('empty');
       }
-    } catch(e) {}
+    } catch(e) { console.log('weekly note load fail', e); }
   }
 
   function openEdit() {
-    try { edit.value = localStorage.getItem(WKEY) || ''; } catch(e) {}
+    edit.value = currentContent;
     disp.style.display = 'none';
     edit.style.display = 'block';
     actions.style.display = 'flex';
@@ -1226,16 +1229,23 @@ document.getElementById('btnNextMonth').addEventListener('click', function() {
 
   disp.addEventListener('click', openEdit);
 
-  btnSaveWN.addEventListener('click', function() {
+  btnSaveWN.addEventListener('click', async function() {
     var val = edit.value.trim();
-    try { localStorage.setItem(WKEY, val); } catch(e) {}
-    if (val) {
-      disp.textContent = val;
-      disp.classList.remove('empty');
-    } else {
-      disp.textContent = '이번 주 목표를 입력하세요...';
-      disp.classList.add('empty');
-    }
+    try {
+      await fetch(SURL+'/rest/v1/weekly_note?id=eq.1', {
+        method: 'PATCH',
+        headers: {'apikey':SKEY,'Authorization':'Bearer '+SKEY,'Content-Type':'application/json','Prefer':'return=representation'},
+        body: JSON.stringify({content: val, updated_at: new Date().toISOString()})
+      });
+      currentContent = val;
+      if (val) {
+        disp.textContent = val;
+        disp.classList.remove('empty');
+      } else {
+        disp.textContent = '이번 주 목표를 입력하세요...';
+        disp.classList.add('empty');
+      }
+    } catch(e) { console.log('weekly note save fail', e); }
     closeEdit();
   });
 
