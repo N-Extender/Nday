@@ -190,7 +190,7 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
   <textarea class="weekly-note-edit" id="weeklyNoteEdit" rows="2" placeholder="이번 주 목표, 기억할 것..."></textarea>
   <div class="weekly-note-actions" id="weeklyNoteActions">
     <button class="cancel-wn" id="weeklyNoteCancel">취소</button>
-    <button class="save-wn" id="weeklyNoteSave">저장</button>
+    <button class="save-wn" id="weeklyNoteSave">확인</button>
   </div>
 </div>
 
@@ -1229,14 +1229,18 @@ document.getElementById('btnNextMonth').addEventListener('click', function() {
 
   disp.addEventListener('click', openEdit);
 
-  btnSaveWN.addEventListener('click', async function() {
+  btnSaveWN.addEventListener('click', async function(e) {
+    e.preventDefault();
+    e.stopPropagation();
     var val = edit.value.trim();
+    console.log('saving weekly note:', val);
     try {
-      await fetch(SURL+'/rest/v1/weekly_note?id=eq.1', {
+      var r = await fetch(SURL+'/rest/v1/weekly_note?id=eq.1', {
         method: 'PATCH',
         headers: {'apikey':SKEY,'Authorization':'Bearer '+SKEY,'Content-Type':'application/json','Prefer':'return=representation'},
         body: JSON.stringify({content: val})
       });
+      console.log('weekly save status:', r.status);
       currentContent = val;
       if (val) {
         disp.textContent = val;
