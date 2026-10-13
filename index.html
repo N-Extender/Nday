@@ -104,7 +104,10 @@ body { font-family:'Noto Serif KR',serif; background:var(--bg); color:var(--text
 .cal-cell.empty .cal-num { color:transparent; }
 .cal-dot { width:6px; height:6px; border-radius:50%; }
 .dot-t { background:#B56A55; }
+.dot-l { background:#9C9690; }
 .dot-p { background:#D9D6CB; }
+.cal-cell.has-late { background:#D8D3CD; }
+.cal-cell.has-late .cal-num { color:#7A7570; font-weight:600; }
 .cal-today-label { font-size:.5rem; color:#B79C81; line-height:1; }
 
 .jcard { background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:10px; overflow:hidden; }
@@ -1089,7 +1092,11 @@ async function renderHistory() {
     var t = today();
     var records = {};
     if (data && data.length) data.forEach(function(d) {
-      records[d.date] = (d.created_at && d.created_at.slice(0,10)===d.date) ? 't' : 'p';
+      if (d.created_at && d.created_at.slice(0,10)===d.date) {
+        records[d.date] = 't'; // 당일 입력
+      } else {
+        records[d.date] = 'l'; // 늦게 입력
+      }
     });
     renderCal(month, records);
     if (!data||!data.length) { container.innerHTML='<div class="empty-msg">이 달의 기록이 없습니다.</div>'; return; }
@@ -1149,15 +1156,18 @@ function renderCal(month, records) {
     var ds = y+'-'+pad(m)+'-'+pad(d);
     var rec = records[ds];
     var isToday = ds === t;
-    html += '<div class="cal-cell'+(rec?' has-rec':'')+(isToday?' today':'')+'" id="cl-'+ds+'">';
+    var cellClass = 'cal-cell' + (rec==='t'?' has-rec':rec==='l'?' has-late':'') + (isToday?' today':'');
+    html += '<div class="'+cellClass+'" id="cl-'+ds+'">';
     html += '<span class="cal-num">'+d+'</span>';
-    html += '<div class="cal-dot '+(rec?'dot-t':'dot-p')+'"></div>';
+    var dotClass = rec==='t'?'dot-t':rec==='l'?'dot-l':'dot-p';
+    html += '<div class="cal-dot '+dotClass+'"></div>';
     if (isToday) html += '<div class="cal-today-label">Today</div>';
     html += '</div>';
   }
   html += '</div>';
   html += '<div style="display:flex;gap:16px;justify-content:center;align-items:center;margin-bottom:16px">';
-  html += '<div style="display:flex;align-items:center;gap:5px"><div class="cal-dot dot-t"></div><span style="font-size:.62rem;color:#B7AF9B;letter-spacing:.04em">DATA RECORDED</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div class="cal-dot dot-t"></div><span style="font-size:.62rem;color:#B7AF9B;letter-spacing:.04em">당일 입력</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:5px"><div class="cal-dot dot-l"></div><span style="font-size:.62rem;color:#B7AF9B;letter-spacing:.04em">늦게 입력</span></div>';
   html += '<div style="display:flex;align-items:center;gap:5px"><div class="cal-dot dot-p"></div><span style="font-size:.62rem;color:#B7AF9B;letter-spacing:.04em">NO DATA</span></div>';
   html += '</div>';
   document.getElementById('calGrid').innerHTML = html;
